@@ -1,0 +1,38 @@
+{
+  "name": "senior-test-project",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "preinstall": "npx npm-force-resolutions"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.2.0",
+    "@fortawesome/free-regular-svg-icons": "^6.2.0",
+    "@fortawesome/free-solid-svg-icons": "^6.2.0",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "babel-plugin-macros": "^3.1.0",
+    "bootstrap": "^5.2.1",
+    "dat.gui": "^0.7.9",
+    "react": "^18.2.0",
+    "react-bootstrap": "^2.5.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "^5.0.1",
+    "stats.js": "^0.17.0",
+    "three": "^0.144.0"
+  },
+  "devDependencies": {
+    "@babel/standalone": "^7.19.5",
+    "@types/react": "^18.0.17",
+    "@types/react-dom": "^18.0.6",
+    "@vitejs/plugin-react": "^2.1.0",
+    "react-error-overlay": "^6.0.9",
+    "vite": "^3.1.0"
+  },
+  "resolutions": {
+    "react-error-overlay": "6.0.9"
+  }
+}
