@@ -86,8 +86,10 @@ export function Canvas() {
 
           //selecting clips
           // clips[0].play();
+          
           clips[1].play();
-
+          // clips[2].play();
+          console.log("Clips",clips);
 
           console.log("Scene");
           console.log(init.scene);

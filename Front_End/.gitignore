@@ -7,7 +7,18 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+!node_modules/
+node_modules/*
+!node_modules/three/
+node_modules/three/*
+!node_modules/three/examples/
+node_modules/three/examples/*
+!node_modules/three/examples/jsm/
+node_modules/three/examples/jsm/*
+!node_modules/three/examples/jsm/loaders/
+node_modules/three/examples/jsm/loaders/*
+!node_modules/three/examples/jsm/loaders/FBXLoader.js
+
 dist
 dist-ssr
 *.local
