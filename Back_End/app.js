@@ -103,8 +103,6 @@ app.route("/words")
             localField: 'wordID',
             foreignField: 'wordID',
             as: 'animation'
-        }).project({
-            _id: 0
         }).exec((err, result) => {
             if (result) {
                 res.send(result)

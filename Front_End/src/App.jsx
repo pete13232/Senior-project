@@ -90,7 +90,7 @@ function App() {
                 </Button>
               </div>
               {wordList.map((word) => (
-                <Card body className="m-2" key={word._id}>
+                <Card body className="m-2" key={word.wordID}>
                   <Card.Text className="fw-bold">{word.wordName}</Card.Text>
                   <Card.Text>
                     {word.description}
@@ -107,7 +107,7 @@ function App() {
                   <ListGroup.Item
                     as="li"
                     className="d-flex align-items-center"
-                    key={word._id}
+                    key={word.wordID}
                   >
                     <div className="d-flex flex-fill  justify-content-between align-items-center">
                       <div className="d-flex justify-content-between align-items-center ps-1">
