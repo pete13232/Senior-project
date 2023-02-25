@@ -20,10 +20,6 @@ const animation = new Promise((res, rej) => {
       console.log("result", result);
       console.log("json result", result.toJSON());
 
-
-
-
-
       //experiment of FBX track transformation to JSON and back to FBX track again ( Success )
       let newTrack = result.toJSON().tracks.map((keyframe) => {
         if (keyframe.type === "vector") {
@@ -38,13 +34,13 @@ const animation = new Promise((res, rej) => {
             keyframe.times,
             keyframe.values
           );
-        }  else if (keyframe.type === "number") {
+        } else if (keyframe.type === "number") {
           return new THREE.NumberKeyframeTrack(
             keyframe.name,
             keyframe.times,
             keyframe.values
           );
-        }else {
+        } else {
           return undefined;
         }
       });
