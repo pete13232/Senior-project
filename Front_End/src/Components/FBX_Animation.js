@@ -7,9 +7,9 @@ const animation = new Promise((res, rej) => {
   // const file = "src/model/Opera_Maya.fbx"
   // const file = "src/model/Opera_Mixamo.fbx"
   // const file = "src/model/Opera_Rokoko_newton.fbx";
-  // const file = "src/model/Clip_4.fbx";
+  const file = "src/model/Clip_4.fbx";
   // const file = "src/model/Clip_4_Noface.fbx";
-  const file = "src/model/Casting_rokoko.fbx";
+  // const file = "src/model/Casting_rokoko.fbx";
   let x = undefined;
   loader.load(file, function (object) {
     // var fs = require("fs");

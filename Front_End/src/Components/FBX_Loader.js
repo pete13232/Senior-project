@@ -6,8 +6,8 @@ const model = new Promise((res, rej) => {
   // const file = "src/model/Opera_Biped.fbx"
   // const file = "src/model/Opera_Maya.fbx"
   // const file = "src/model/Opera_Mixamo.fbx"
-  const file = "src/model/Opera_Rokoko_newton.fbx"
-  // const file = "src/model/Clip_4.fbx";
+  // const file = "src/model/Opera_Rokoko_newton.fbx"
+  const file = "src/model/Clip_4.fbx";
   
   // const file = "src/model/Clip_4_Noface.fbx";
   loader.load(file, function (object) {
