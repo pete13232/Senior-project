@@ -9,8 +9,14 @@ const UserSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ['guest', 'specialist', 'admin'],
-        default: ''
-    }
+        default: 'guest'
+    },
+    // animation: [{type:'ObjectId', ref:'Animation'}],
+    validateLog: [{type:'ObjectId', ref:'ValidateLog'}]
 })
+
+const Animation = require("./Animation")
+const ValidateLog = require("./ValidateLog")
+
 
 module.exports = mongoose.model('User', UserSchema)
