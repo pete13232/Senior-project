@@ -1,5 +1,21 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Home from "./Components/Page/Home";
 import "bootstrap/dist/css/bootstrap.min.css";
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+import Layout from "./Components/Container/Layout";
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  // {
+  //   path: "/",
+  //   element: <App />,
+  // },
+]);
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <Layout>
+    <RouterProvider router={router} />
+  </Layout>
+);
