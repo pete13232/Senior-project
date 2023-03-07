@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 
 // Create Model (Compiled from Schema, instance of model is "Document")
 const wordSchema = new mongoose.Schema({
-    word: {type:String, trim:true, default:''},
-    description: {type:String, trim:true, default:''},
+    word: {type:String, trim:true, default:'', required: true},
+    description: {type:String, trim:true, default:'', required: true},
     animation: [{type:'ObjectId', ref:'Animation'}]
 })
 

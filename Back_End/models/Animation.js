@@ -2,11 +2,11 @@ const mongoose = require('mongoose')
 
 // Create Model (Compiled from Schema, instance of model is "Document")
 const AnimationSchema = new mongoose.Schema({
-    word: {type: String},
-    file: {type:String},
+    word: {type: String, required: true},
+    file: {type:String, required: true},
     validateLog: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "ValidateLog"
+        ref: "ValidateLog",
     }
 }) 
 
