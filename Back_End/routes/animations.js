@@ -18,7 +18,6 @@ router.route("/")
                 }
             }
         }).then(doc => {
-            // console.log(doc[0])
             res.send(doc)
         }).catch(err => {
             res.send(err)
