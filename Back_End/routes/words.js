@@ -6,8 +6,8 @@ const Word = require('../models/Word')
 router.route("/")
     .get((req, res) => {
         Word.find({}).populate("animation", 'file')
-            .then(doc => res.send(doc))
-            .catch(err => res.send(err))
+            .then(doc => res.json(doc))
+            .catch(err => res.json(err))
     })
 
 // Create New Word
@@ -19,16 +19,16 @@ router.route("/add")
             animation: []
         })
         newWord.save()
-            .then(doc => res.send(doc))
-            .catch(err => res.send(err))
+            .then(doc => res.json(doc))
+            .catch(err => res.json(err))
     })
 
 // Add Animation to Word
 router.route("/add/animation/:wordID")
     .put((req, res) => {
         Word.findByIdAndUpdate({ _id: req.params.wordID }, { $push: { animation: req.body.animationID } }, { new: true })
-            .then(doc => res.send(doc))
-            .catch(err => res.send(err))
+            .then(doc => res.json(doc))
+            .catch(err => res.json(err))
     })
 
 // Delete Selected word
@@ -37,12 +37,12 @@ router.route("/delete/:wordID")
         Word.deleteOne({ _id: req.params.wordID })
             .then(doc => {
                 if(doc.deletedCount === 1){
-                    res.send("Word deleted !")
+                    res.json("Word deleted !")
                 }else{
-                    res.send("No word to delete")
+                    res.json("No word to delete")
                 }
             })
-            .catch(err => res.send(err))
+            .catch(err => res.json(err))
     })
 
 

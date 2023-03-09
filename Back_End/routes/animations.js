@@ -18,9 +18,9 @@ router.route("/")
                 }
             }
         }).then(doc => {
-            res.send(doc)
+            res.json(doc)
         }).catch(err => {
-            res.send(err)
+            res.json(err)
         })
     })
 
@@ -35,8 +35,8 @@ router.route("/add")
             validateLog: null
         })
         newAnimation.save()
-            .then(doc => res.send(doc))
-            .catch(err => res.send(err))
+            .then(doc => res.json(doc))
+            .catch(err => res.json(err))
     })
 
 // Add Validate log to Selected Animation
@@ -46,9 +46,9 @@ router.route("/validate/:animationID")
         const validateLog = req.body.validateID
         Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: validateLog } }, { new: true })
             .then((doc) => {
-                res.send(doc)
+                res.json(doc)
             }).catch(err => {
-                res.send(err)
+                res.json(err)
             })
     })
     .post((req, res) => {
@@ -60,21 +60,21 @@ router.route("/validate/:animationID")
             user: userID,
             validateStat: validateStat
         })
-        newValidateLog.save().then((data, err) => {
-            if (data) {
-                User.findByIdAndUpdate({ _id: userID }, { $push: { validateLog: data._id } })
+        newValidateLog.save().then(log => {
+            if (log) {
+                User.findByIdAndUpdate({ _id: userID }, { $push: { validateLog: log._id } })
                     .then(() => {
-                        Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: data._id } })
+                        Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: log._id } })
                             .then(() => {
-                                res.send(data)
+                                res.json(log)
                             }).catch(err => {
-                                res.send(err)
+                                res.json(err)
                             })
                     }).catch(err => {
-                        res.send(err)
+                        res.json(err)
                     })
             }
-            else res.send(err)
+            else res.json(err)
         })
     })
 
@@ -84,11 +84,11 @@ router.route("/delete/:animationID")
         const animationID = req.params.animationID
         Animation.deleteOne({ _id: animationID }, (err, result) => {
             if (!err && result.deletedCount != 0) {
-                res.send("Animation deleted success !")
+                res.json("Animation deleted success !")
             } else if (result.deletedCount == 0) {
-                res.send("No animation you looking for to deleted !")
+                res.json("No animation you looking for to deleted !")
             } else {
-                res.send(err)
+                res.json(err)
             }
         })
     })

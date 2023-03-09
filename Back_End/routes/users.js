@@ -15,9 +15,9 @@ router.route("/")
                 }
             }
         }).then(doc => {
-            res.send(doc)
+            res.json(doc)
         }).catch(err => {
-            res.send(err)
+            res.json(err)
         })
     })
 
@@ -32,8 +32,8 @@ router.route("/add")
             validateLog: req.body.validateLog
         })
         newUser.save()
-            .then(doc => res.send(doc))
-            .catch(err => res.send(err))
+            .then(doc => res.json(doc))
+            .catch(err => res.json(err))
     })
 
 
@@ -41,8 +41,8 @@ router.route("/validate/:userID")
     // User Log
     .put((req, res) => {
         User.findByIdAndUpdate({ _id: req.params.userID }, { $push: { validateLog: req.body.validateID } }, { new: true })
-            .then(doc => res.send(doc))
-            .catch(err => res.send(err))
+            .then(doc => res.json(doc))
+            .catch(err => res.json(err))
     })
 
 module.exports = router

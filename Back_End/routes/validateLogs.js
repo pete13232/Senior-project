@@ -6,8 +6,8 @@ const ValidateLog = require("../models/ValidateLog")
 router.route("/")
     .get((req, res) => {
         ValidateLog.find({}).then((doc, err) => {
-            if (doc) res.send(doc)
-            else res.send(err)
+            if (doc) res.json(doc)
+            else res.json(err)
         })
     })
 
@@ -21,8 +21,8 @@ router.route("/add")
 
         })
         newValidateLog.save().then((doc, err) => {
-            if (doc) res.send(doc)
-            else res.send(err)
+            if (doc) res.json(doc)
+            else res.json(err)
         })
     })
 
