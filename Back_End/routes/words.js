@@ -34,7 +34,8 @@ router.route("/add/animation/:wordID")
 // Delete Selected word
 router.route("/delete/:wordID")
     .delete((req, res) => {
-        Word.deleteOne({ _id: req.params.wordID })
+        const wordID = req.params.wordID
+        Word.deleteOne({ _id: wordID })
             .then(doc => {
                 if(doc.deletedCount === 1){
                     res.json("Word deleted !")

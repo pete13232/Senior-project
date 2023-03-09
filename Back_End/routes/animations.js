@@ -82,15 +82,15 @@ router.route("/validate/:animationID")
 router.route("/delete/:animationID")
     .delete((req, res) => {
         const animationID = req.params.animationID
-        Animation.deleteOne({ _id: animationID }, (err, result) => {
-            if (!err && result.deletedCount != 0) {
-                res.json("Animation deleted success !")
-            } else if (result.deletedCount == 0) {
-                res.json("No animation you looking for to deleted !")
-            } else {
-                res.json(err)
-            }
-        })
+        Animation.deleteOne({ _id: animationID })
+            .then(doc => {
+                if (doc.deletedCount === 1) {
+                    res.json("Animation deleted success !")
+                } else {
+                    res.json("No animation you looking for to deleted !")
+                }
+            })
+            .catch(err => res.json(err))
     })
 
 
