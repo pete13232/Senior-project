@@ -60,13 +60,13 @@ router.route("/validate/:animationID")
             user: userID,
             validateStat: validateStat
         })
-        newValidateLog.save().then(log => {
-            if (log) {
-                User.findByIdAndUpdate({ _id: userID }, { $push: { validateLog: log._id } })
+        newValidateLog.save().then(validateLog => {
+            if (validateLog) {
+                User.findByIdAndUpdate({ _id: userID }, { $push: { validateLog: validateLog._id } })
                     .then(() => {
-                        Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: log._id } })
+                        Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: validateLog._id } })
                             .then(() => {
-                                res.json(log)
+                                res.json(validateLog)
                             }).catch(err => {
                                 res.json(err)
                             })
