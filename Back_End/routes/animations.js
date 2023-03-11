@@ -34,6 +34,7 @@ router.route("/add")
             file: file,
             validateLog: null
         })
+        newAnimation.markModified('file')
         newAnimation.save()
             .then(doc => res.json(doc))
             .catch(err => res.json(err))
