@@ -2,62 +2,96 @@ const express = require('express')
 const router = express.Router()
 
 const Animation = require('../models/Animation')
+const ValidateLog = require("../models/ValidateLog")
+const User = require('../models/User')
 
 router.route("/")
     .get((req, res) => {
         Animation.find({}).populate({
             path: "validateLog",
-            select:{animation: 0},
+            select: { animation: 0, _id: 0 },
             populate: {
                 path: "user",
                 select: {
+                    _id: 0,
                     username: 1
                 }
             }
-        }).then((success, err) => {
-            if (success) {
-                console.log(success[0])
-                res.send(success)
-            }
-            else res.send(err)
+        }).then(doc => {
+            res.json(doc)
+        }).catch(err => {
+            res.json(err)
         })
     })
 
 // Create New Animation
 router.route("/add")
     .post((req, res) => {
+        const word = req.body.word
+        const file = req.body.file
         const newAnimation = Animation({
-            word: req.body.word,
-            file: req.body.file,
+            word: word,
+            file: file,
             validateLog: null
         })
-        newAnimation.save().then((success, err) => {
-            if (success) res.send(success)
-            else res.send(err)
-        })
+        newAnimation.markModified('file')
+        newAnimation.save()
+            .then(doc => res.json(doc))
+            .catch(err => res.json(err))
     })
 
 // Add Validate log to Selected Animation
 router.route("/validate/:animationID")
     .put((req, res) => {
-        Animation.findByIdAndUpdate({ _id: req.params.animationID }, { $set: { validateLog: req.body.validateID } }, { new: true }).then((doc, err) => {
-            if (doc) res.send(doc)
-            else res.send(err)
+        const animationID = req.params.animationID
+        const validateLog = req.body.validateID
+        Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: validateLog } }, { new: true })
+            .then((doc) => {
+                res.json(doc)
+            }).catch(err => {
+                res.json(err)
+            })
+    })
+    .post((req, res) => {
+        const animationID = req.params.animationID
+        const userID = req.body.userID
+        const validateStat = req.body.validateStat
+        const newValidateLog = ValidateLog({
+            animation: animationID,
+            user: userID,
+            validateStat: validateStat
+        })
+        newValidateLog.save().then(validateLog => {
+            if (validateLog) {
+                User.findByIdAndUpdate({ _id: userID }, { $push: { validateLog: validateLog._id } })
+                    .then(() => {
+                        Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: validateLog._id } })
+                            .then(() => {
+                                res.json(validateLog)
+                            }).catch(err => {
+                                res.json(err)
+                            })
+                    }).catch(err => {
+                        res.json(err)
+                    })
+            }
+            else res.json(err)
         })
     })
 
 // Delete Selected Animation
 router.route("/delete/:animationID")
     .delete((req, res) => {
-        Animation.deleteOne({ _id: req.params.animationID }, (err, result) => {
-            if (!err && result.deletedCount != 0) {
-                res.send("Animation deleted success !")
-            } else if (result.deletedCount == 0) {
-                res.send("No animation you looking for to deleted !")
-            } else {
-                res.send(err)
-            }
-        })
+        const animationID = req.params.animationID
+        Animation.deleteOne({ _id: animationID })
+            .then(doc => {
+                if (doc.deletedCount === 1) {
+                    res.json("Animation deleted success !")
+                } else {
+                    res.json("No animation you looking for to deleted !")
+                }
+            })
+            .catch(err => res.json(err))
     })
 
 
