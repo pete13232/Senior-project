@@ -37,13 +37,25 @@ router.route("/delete/:wordID")
         const wordID = req.params.wordID
         Word.deleteOne({ _id: wordID })
             .then(doc => {
-                if(doc.deletedCount === 1){
+                if (doc.deletedCount === 1) {
                     res.json("Word deleted !")
-                }else{
+                } else {
                     res.json("No word to delete")
                 }
             })
             .catch(err => res.json(err))
+    })
+
+router.route("/search")
+    .get((req, res) => {
+        const searchQuery = req.query.searchQuery
+        const searchWord = new RegExp(searchQuery, 'i')
+        try {
+            const word = Word.find({ word: searchWord })
+                .then(doc => res.json(doc))
+        } catch (error) {
+            res.json({message: error.message})
+        }
     })
 
 
