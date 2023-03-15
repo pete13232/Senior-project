@@ -58,14 +58,14 @@ const addAnimation = async (req, res) => {
 // Delete Selected word
 const deleteWord = async (req, res) => {
     const { wordID } = req.params
-
-    if (!mongoose.Types.ObjectId.isValid(wordID)) {
-        res.send('This is not objectID')
+    const verifyWordID = mongoose.Types.ObjectId.isValid(wordID)
+    if (!verifyWordID) {
+        res.send('wordID is not ObjectID')
     } else {
         try {
-            const deletedWord = await Word.deleteOne({ _id: wordID })
-            if (deletedWord.deletedCount === 1) {
-                res.json(`Word ${wordID} deleted !`)
+            const deletedWord = await Word.findByIdAndDelete({ _id: wordID })
+            if (deletedWord) {
+                res.json(`Word "${deletedWord.word}" has been deleted`)
             } else {
                 res.json("No word to delete")
             }
