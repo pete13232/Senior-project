@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const { getAnimation, createAnimation, updateValidateLog, deleteAnimation } = require('../controllers/animations')
+const { upload } = require('../controllers/multer')
 
 // Get All Animation
 router.route("/")
@@ -9,7 +10,7 @@ router.route("/")
 
 // Create New Animation
 router.route("/add")
-    .post(createAnimation)
+    .post(upload.single('file'), createAnimation)
 
 // Update Validate log to Selected Animation
 router.route("/validate/:animationID")
