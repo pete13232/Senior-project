@@ -1,4 +1,6 @@
 const { default: mongoose } = require('mongoose')
+const fs = require("fs")
+const path = require('path')
 const Animation = require('../models/Animation')
 const User = require('../models/User')
 const ValidateLog = require('../models/ValidateLog')
@@ -26,8 +28,12 @@ const getAnimation = async (req, res) => {
 
 // Create New Animation
 const createAnimation = async (req, res) => {
-    const animationData = req.body
-    const newAnimation = new Animation(animationData)
+    const data = fs.readFileSync(path.join(__dirname, '..'+ '/Uploaded/', req.file.filename), "utf-8")
+    const file = JSON.parse(data) // convert JSON string to JSON Object
+    const newAnimation = new Animation({
+        word: req.body.word,
+        file: file
+    })
 
     try {
         await newAnimation.markModified('file')
