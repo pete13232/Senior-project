@@ -27,6 +27,7 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import qs from "qs";
 import axios from "axios";
+import FBXtoJSON from "../../Utils/FBXToJSON";
 const Home = () => {
   const {
     data: wordList,
@@ -53,17 +54,31 @@ const Home = () => {
   });
 
   const submitAddWord = (values) => {
-    //delete animation property waitng for debug
-    delete values.animation;
+    FBXtoJSON({ file: values.animation }).then((result) => {
+      // values.animation = result;
+      // delete values.animation.tracks;
 
-    axios
-      .post("http://localhost:3333/words/add", qs.stringify(values))
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((error) => {
-        console.error("There was an error!", error);
+      const blob = new Blob([JSON.stringify(result)], {
+        type: "application/json",
       });
+      const formData = new FormData();
+      formData.append("word", values.word);
+      formData.append("file", blob, values.word + "animation_clip");
+      const reader = new FileReader();
+      reader.readAsText(blob);
+      reader.onload = () => {
+        const data = JSON.parse(reader.result);
+        console.log(data); // logs the parsed JSON data
+      };
+      axios
+        .post("http://localhost:3333/animations/add", formData)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((error) => {
+          console.error("There was an error!", error);
+        });
+    });
   };
 
   return (
@@ -174,6 +189,7 @@ const Home = () => {
                 handleSubmit,
                 handleChange,
                 handleBlur,
+                setFieldValue,
                 values,
                 touched,
                 isValid,
@@ -211,8 +227,13 @@ const Home = () => {
                       <Form.Control
                         name="animation"
                         type="file"
-                        onChange={handleChange}
                         isInvalid={!!errors.file}
+                        onChange={(event) => {
+                          setFieldValue(
+                            "animation",
+                            event.currentTarget.files[0]
+                          );
+                        }}
                       />
                     </Form.Group>
                   </Modal.Body>

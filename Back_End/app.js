@@ -2,29 +2,31 @@
 
 const express = require("express");
 const bodyParser = require("body-parser");
-const mongoose = require('mongoose');
-const cors = require('cors')
+const mongoose = require("mongoose");
+const cors = require("cors");
 const router = express.Router();
-
-
+const path = require("path");
 const app = express();
 
-app.use(cors())
+app.use(cors());
 
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(
+  bodyParser.urlencoded({
+    extended: true,
+  })
+);
+app.use("/file", express.static(path.join(__dirname, "/Uploaded/")));
 
-mongoose.set('strictQuery', true)
+mongoose.set("strictQuery", true);
 // app.use(express.static("public"));
 
-mongoose.connect("mongodb://localhost:27017/tslDB", { useNewUrlParser: true })
+mongoose.connect("mongodb://localhost:27017/tslDB", { useNewUrlParser: true });
 
-app.use('/users', require('./routes/users'))
-app.use('/words', require('./routes/words'))
-app.use('/animations', require('./routes/animations'))
-app.use('/validateLogs', require('./routes/validateLogs'))
+app.use("/users", require("./routes/users"));
+app.use("/words", require("./routes/words"));
+app.use("/animations", require("./routes/animations"));
+app.use("/validateLogs", require("./routes/validateLogs"));
 
 app.listen(3333, function () {
-    console.log("Server started on port 3333");
+  console.log("Server started on port 3333");
 });
