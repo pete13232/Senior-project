@@ -1,8 +1,10 @@
 const express = require('express')
 const router = express.Router()
 
-const { getAnimation, createAnimation, updateValidateLog, deleteAnimation } = require('../controllers/animations')
+const { getAnimation, createAnimation, updateValidateLog, deleteAnimation, getAnimationLog } = require('../controllers/animations')
 const { upload } = require('../controllers/multer')
+const Word = require('../models/Word')
+
 
 // Get All Animation
 router.route("/")
@@ -26,9 +28,12 @@ router.route("/validate/:animationID")
     // })
     .post(updateValidateLog)
 
+router.route("/validateLog/:animationID")
+    .get(getAnimationLog)
+
+
 // Delete Selected Animation
 router.route("/delete/:animationID")
     .delete(deleteAnimation)
-
 
 module.exports = router

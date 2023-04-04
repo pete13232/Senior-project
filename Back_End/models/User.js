@@ -12,7 +12,7 @@ const UserSchema = new mongoose.Schema({
         default: 'guest'
     },
     // animation: [{type:'ObjectId', ref:'Animation'}],
-    validateLog: [{type:'ObjectId', ref:'ValidateLog'}]
+    // validateLog: [{type:'ObjectId', ref:'ValidateLog'}]
 })
 
 const Animation = require("./Animation")

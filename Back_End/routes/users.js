@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 
 const User = require('../models/User')
-const { getUser, createUser } = require('../controllers/users')
+const { getUser, createUser, getUserLog } = require('../controllers/users')
 
 // Get all user
 router.route("/")
@@ -13,6 +13,11 @@ router.route("/add")
     .post(createUser)
 
 
+// Get All user Log
+router.route("/validateLog/:userID")
+    .get(getUserLog)
+
+    
 // router.route("/validate/:userID")
 //     // User Log
 //     .put((req, res) => {

@@ -4,7 +4,8 @@ const Word = require("../models/Word");
 // Get all word
 const getWord = async (req, res) => {
   try {
-    const foundWord = await Word.find({}).populate("animation", "file");
+    // const foundWord = await Word.find({}).populate("animation", "file");
+    const foundWord = await Word.find({});
     res.json({ data: foundWord });
   } catch (error) {
     res.json({ message: error.message });
