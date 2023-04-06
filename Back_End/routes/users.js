@@ -5,16 +5,16 @@ const User = require('../models/User')
 const { getUser, createUser, getUserLog } = require('../controllers/users')
 
 // Get all user
-router.route("/")
+router.route("/users")
     .get(getUser)
 
 // Create New User
-router.route("/add")
+router.route("/users/add")
     .post(createUser)
 
 
 // Get All user Log
-router.route("/validateLog/:userID")
+router.route("/users/validateLog/:userID")
     .get(getUserLog)
 
     

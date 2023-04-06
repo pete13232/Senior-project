@@ -7,15 +7,15 @@ const Word = require('../models/Word')
 
 
 // Get All Animation
-router.route("/")
+router.route("/animations")
     .get(getAnimation)
 
 // Create New Animation
-router.route("/add")
+router.route("/animations/add")
     .post(upload.single('file'), createAnimation)
 
 // Update Validate log to Selected Animation
-router.route("/validate/:animationID")
+router.route("/animations/validate/:animationID")
     // .put((req, res) => {
     //     const animationID = req.params.animationID
     //     const validateLog = req.body.validateID
@@ -28,12 +28,12 @@ router.route("/validate/:animationID")
     // })
     .post(updateValidateLog)
 
-router.route("/validateLog/:animationID")
+router.route("/animations/validateLog/:animationID")
     .get(getAnimationLog)
 
 
 // Delete Selected Animation
-router.route("/delete/:animationID")
+router.route("/animations/delete/:animationID")
     .delete(deleteAnimation)
 
 module.exports = router
