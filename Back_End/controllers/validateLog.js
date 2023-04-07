@@ -3,8 +3,8 @@ const ValidateLog = require("../models/ValidateLog")
 const getLog = async (req, res) => {
     try {
         const foundLog = await ValidateLog.find({}).populate('animationID')
-    } catch (error) {
-        
+    } catch (err) {
+        res.json({ message: err.message });
     }
 }
 

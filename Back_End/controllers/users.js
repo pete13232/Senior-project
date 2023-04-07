@@ -18,8 +18,8 @@ const getUser = async (req, res) => {
         // })
         const foundUser = await User.find({})
         res.json({ data: foundUser })
-    } catch (error) {
-        res.json({ message: error.message })
+    } catch (err) {
+        res.json({ message: err.message })
     }
 }
 
@@ -31,8 +31,8 @@ const createUser = async (req, res) => {
     try {
         await newUser.save()
         res.json(newUser)
-    } catch (error) {
-        res.json({ message: error.message })
+    } catch (err) {
+        res.json({ message: err.message })
     }
 }
 
@@ -48,8 +48,8 @@ const getUserLog = async (req, res) => {
                 }
             })
         res.json({ userLog: userLog })
-    } catch (error) {
-        res.json({ message: error.message })
+    } catch (err) {
+        res.json({ message: err.message })
     }
 }
 

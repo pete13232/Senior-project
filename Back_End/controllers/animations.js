@@ -25,8 +25,8 @@ const getAnimation = async (req, res) => {
     const foundAnimation = await Animation.find({}).populate('wordID')
 
     res.json({ data: foundAnimation });
-  } catch (error) {
-    res.json({ message: error.message });
+  } catch (err) {
+    res.json({ message: err.message });
   }
 };
 
@@ -45,8 +45,8 @@ const createAnimation = async (req, res) => {
         await newAnimation.markModified("file");
         await newAnimation.save();
         res.json(newAnimation);
-      } catch (error) {
-        res.json({ message: error.message });
+      } catch (err) {
+        res.json({ message: err.message });
       }
     } else {
       res.json("invalid wordID")
@@ -90,8 +90,8 @@ const updateValidateLog = async (req, res) => {
       } else {
         res.json("Can't add validateLog to user or animation");
       }
-    } catch (error) {
-      res.json({ message: error.message });
+    } catch (err) {
+      res.json({ message: err.message });
     }
   }
 };
@@ -112,8 +112,8 @@ const deleteAnimation = async (req, res) => {
       } else {
         res.json("No animation deleted");
       }
-    } catch (error) {
-      res.json({ message: error.message });
+    } catch (err) {
+      res.json({ message: err.message });
     }
   }
 };
@@ -130,8 +130,8 @@ const getAnimationLog = async (req, res) => {
             // }
         })
     res.json({ animationLog: animationLog })
-} catch (error) {
-    res.json({ message: error.message })
+} catch (err) {
+    res.json({ message: err.message })
 }
 }
 
