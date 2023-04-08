@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const bcrypt = require('bcrypt')
 
 // Create Model (Compiled from Schema, instance of model is "Document")
 const UserSchema = new mongoose.Schema({
@@ -24,8 +25,13 @@ const UserSchema = new mongoose.Schema({
     // validateLog: [{type:'ObjectId', ref:'ValidateLog'}]
 })
 
-const Animation = require("./Animation")
-const ValidateLog = require("./ValidateLog")
+// const Animation = require("./Animation")
+// const ValidateLog = require("./ValidateLog")
 
+UserSchema.pre('save', async function(next){
+    const salt = await bcrypt.genSalt()
+    this.password = await bcrypt.hash(this.password, salt)
+    next()
+})
 
 module.exports = mongoose.model('User', UserSchema)
