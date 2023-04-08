@@ -3,7 +3,7 @@ const User = require("../models/User");
 const ValidateLog = require("../models/ValidateLog");
 const { populate } = require("../models/Word");
 
-// Get all userSS
+// Get all user
 const getUser = async (req, res) => {
     try {
         // const foundUser = await User.find({}).populate({

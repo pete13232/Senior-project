@@ -1,12 +1,12 @@
 const express = require('express')
 const router = express.Router()
-const authController = require('../controllers/authController')
+const {signup_post, login_post} = require('../controllers/authController')
 
 router.route('/signup')
     .get((req,res)=>{
         res.send("You are log in")
     })
-    .post()
+    .post(signup_post)
 
 router.route('/login')
     .get()

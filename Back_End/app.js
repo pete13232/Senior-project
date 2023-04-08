@@ -30,10 +30,14 @@ app.use("/file", express.static(path.join(__dirname, "/Uploaded/")));
 mongoose.set("strictQuery", true);
 // app.use(express.static("public"));
 
-
 // Database Connection
-mongoose.connect("mongodb://127.0.0.1:27017/tslDB", { useNewUrlParser: true });
-
+const dbURI = "mongodb://127.0.0.1:27017/tslDB"
+mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then((result) => {
+    console.log("Server started on port 3333")
+    app.listen(3333)
+  })
+  .catch((err) => console.log(err))
 
 // Routes
 app.use(userRoute);
@@ -41,8 +45,3 @@ app.use(wordRoute);
 app.use(animationRoute);
 app.use(validateLogRoute);
 app.use(authRoute)
-
-
-app.listen(3333, function () {
-  console.log("Server started on port 3333");
-});
