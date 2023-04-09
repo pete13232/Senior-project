@@ -1,11 +1,14 @@
 //jshint esversion:6
 
 const express = require("express");
-const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const router = express.Router();
 const path = require("path");
+
+// parser
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser")
 
 // import route
 const userRoute = require("./routes/users")
@@ -14,10 +17,10 @@ const animationRoute = require("./routes/animations")
 const validateLogRoute = require("./routes/validateLogs")
 const authRoute = require("./routes/auth")
 
-
 const app = express();
 
 // Middleware
+app.use(express.static('public'))
 app.use(cors());
 app.use(express.json())
 app.use(
@@ -26,9 +29,13 @@ app.use(
   })
 );
 app.use("/file", express.static(path.join(__dirname, "/Uploaded/")));
+app.use(cookieParser())
 
 mongoose.set("strictQuery", true);
 // app.use(express.static("public"));
+
+// view engine
+app.set('view engine', 'ejs')
 
 // Database Connection
 const dbURI = "mongodb://127.0.0.1:27017/tslDB"
@@ -44,4 +51,7 @@ app.use(userRoute);
 app.use(wordRoute);
 app.use(animationRoute);
 app.use(validateLogRoute);
-app.use(authRoute)
+app.use(authRoute) 
+app.get('/', (req, res) => {
+  res.send("This is a homepage")
+})
