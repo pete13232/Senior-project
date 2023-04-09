@@ -28,10 +28,24 @@ const UserSchema = new mongoose.Schema({
 // const Animation = require("./Animation")
 // const ValidateLog = require("./ValidateLog")
 
-UserSchema.pre('save', async function(next){
+// Hash password before doc saved to db
+UserSchema.pre('save', async function (next) {
     const salt = await bcrypt.genSalt()
     this.password = await bcrypt.hash(this.password, salt)
     next()
 })
+
+// static method to login user
+UserSchema.statics.login = async function (username, password) {
+    const foundUser = await this.findOne({ username })
+    if(foundUser) {
+        const auth = await bcrypt.compare(password, foundUser.password)
+        if(auth) {
+            return foundUser
+        }
+        throw Error('incorrect password')
+    }
+    throw Error('incorrect username')
+}
 
 module.exports = mongoose.model('User', UserSchema)

@@ -15,7 +15,8 @@ const userRoute = require("./routes/users")
 const wordRoute = require("./routes/words")
 const animationRoute = require("./routes/animations")
 const validateLogRoute = require("./routes/validateLogs")
-const authRoute = require("./routes/auth")
+const authRoute = require("./routes/auth");
+const { checkUser, requireAuth } = require("./middleware/authMiddleware");
 
 const app = express();
 
@@ -47,11 +48,15 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch((err) => console.log(err))
 
 // Routes
+app.get('*', checkUser)
 app.use(userRoute);
 app.use(wordRoute);
 app.use(animationRoute);
 app.use(validateLogRoute);
 app.use(authRoute) 
 app.get('/', (req, res) => {
-  res.send("This is a homepage")
+  res.render('home')
+})
+app.get('/content', requireAuth, (req,res) => {
+  res.render('content')
 })

@@ -56,8 +56,18 @@ const signup_post = async (req, res) => {
     }
 }
 
-const login_post = (req, res) => {
+const login_post = async (req, res) => {
+    const { username, password } = req.body
 
+    try {
+        const newUser = await User.login(username, password )
+        const token = createToken(newUser._id)
+        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
+        res.status(200).json({ newUser: newUser._id })
+    } catch (err) {
+        const errors = handleErrors(err)
+        res.status(400).json({ errors })
+    }
 }
 
 const signup_get = (req, res) => {
@@ -68,4 +78,9 @@ const login_get = (req, res) => {
     res.render('login')
 }
 
-module.exports = { signup_post, login_post, signup_get, login_get }
+const logout_get = (req, res) => {
+    res.cookie('jwt', '', {maxAge: 1})
+    res.redirect('/')
+}
+
+module.exports = { signup_post, login_post, signup_get, login_get, logout_get }
