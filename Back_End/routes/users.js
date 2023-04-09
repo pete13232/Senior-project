@@ -3,10 +3,11 @@ const router = express.Router()
 
 const User = require('../models/User')
 const { getUser, createUser, getUserLog } = require('../controllers/users')
+const { requireAuth } = require('../middleware/authMiddleware')
 
 // Get all user
 router.route("/users")
-    .get(getUser)
+    .get(requireAuth, getUser)
 
 // Create New User
 router.route("/users/add")

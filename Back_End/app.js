@@ -15,7 +15,7 @@ const userRoute = require("./routes/users")
 const wordRoute = require("./routes/words")
 const animationRoute = require("./routes/animations")
 const validateLogRoute = require("./routes/validateLogs")
-const authRoute = require("./routes/auth");
+const authRoute = require("./routes/authRoutes");
 const { checkUser, requireAuth } = require("./middleware/authMiddleware");
 
 const app = express();
