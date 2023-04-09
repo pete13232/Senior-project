@@ -1,21 +1,25 @@
+const { default: mongoose } = require("mongoose");
 const User = require("../models/User");
+const ValidateLog = require("../models/ValidateLog");
+const { populate } = require("../models/Word");
 
 // Get all user
 const getUser = async (req, res) => {
     try {
-        const foundUser = await User.find({}).populate({
-            path: "validateLog",
-            select: { user: 0 },
-            populate: {
-                path: "animation",
-                select: {
-                    validateLog: 0
-                }
-            }
-        })
+        // const foundUser = await User.find({}).populate({
+        //     path: "validateLog",
+        //     // select: { user: 0 },
+        //     populate: {
+        //         path: "animationID",
+        //         // select: {
+        //         //     validateLog: 0
+        //         // }
+        //     }
+        // })
+        const foundUser = await User.find({})
         res.json({ data: foundUser })
-    } catch (error) {
-        res.json({ message: error.message })
+    } catch (err) {
+        res.json({ message: err.message })
     }
 }
 
@@ -27,9 +31,26 @@ const createUser = async (req, res) => {
     try {
         await newUser.save()
         res.json(newUser)
-    } catch (error) {
-        res.json({message: error.message})
+    } catch (err) {
+        res.json({ message: err.message })
     }
 }
 
-module.exports = {getUser, createUser}
+// Get All user Log
+const getUserLog = async (req, res) => {
+    const { userID } = req.params
+    try {
+        const userLog = await ValidateLog.find({ userID: userID }).select({userID:0})
+            .populate({
+                path: "animationID",
+                populate: {
+                    path: "wordID"
+                }
+            })
+        res.json({ userLog: userLog })
+    } catch (err) {
+        res.json({ message: err.message })
+    }
+}
+
+module.exports = { getUser, createUser, getUserLog }

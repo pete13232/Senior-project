@@ -4,10 +4,11 @@ const Word = require("../models/Word");
 // Get all word
 const getWord = async (req, res) => {
   try {
-    const foundWord = await Word.find({}).populate("animation", "file");
+    // const foundWord = await Word.find({}).populate("animation", "file");
+    const foundWord = await Word.find({});
     res.json({ data: foundWord });
-  } catch (error) {
-    res.json({ message: error.message });
+  } catch (err) {
+    res.json({ message: err.message });
   }
 };
 
@@ -19,8 +20,8 @@ const getWordBySearch = async (req, res) => {
   try {
     const foundWord = await Word.find({ word: searchWord });
     res.json({ data: foundWord });
-  } catch (error) {
-    res.json({ message: error.message });
+  } catch (err) {
+    res.json({ message: err.message });
   }
 };
 
@@ -34,8 +35,8 @@ const createWord = async (req, res) => {
   try {
     await newWord.save();
     res.json(newWord);
-  } catch (error) {
-    res.json({ message: error.message });
+  } catch (err) {
+    res.json({ message: err.message });
   }
 };
 
@@ -54,8 +55,8 @@ const addAnimation = async (req, res) => {
         { new: true }
       );
       res.json(addedAnimation);
-    } catch (error) {
-      res.json({ message: error.message });
+    } catch (err) {
+      res.json({ message: err.message });
     }
   }
 };
@@ -74,8 +75,8 @@ const deleteWord = async (req, res) => {
       } else {
         res.json("No word to delete");
       }
-    } catch (error) {
-      res.json({ message: error.message });
+    } catch (err) {
+      res.json({ message: err.message });
     }
   }
 };
