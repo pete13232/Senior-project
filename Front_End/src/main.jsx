@@ -7,8 +7,11 @@ import {
   Navigate,
 } from "react-router-dom";
 import Home from "./Components/Page/Home/Home";
+import Login from "./Components/Page/Login/Login";
+
 import "bootstrap/dist/css/bootstrap.min.css";
 import Layout from "./Components/Container/Layout";
+import Signup from "./Components/Page/Signup/Signup";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -32,11 +35,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/Signup",
-    element: <Home />,
+    element: <Signup />,
   },
   {
     path: "Login",
-    element: <Home />,
+    element: <Login />,
   },
   {
     path: "*",
