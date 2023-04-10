@@ -13,13 +13,34 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <Home />,
-    errorElement: <Navigate to="/" replace={true} />,
     children: [
       {
-        path: "animation/:animationID",
+        path: "words/:wordID",
         element: <Home />,
+        children: [
+          {
+            path: "animations/:animationID",
+            element: <Home />,
+          },
+          {
+            path: "",
+            element: <Home />,
+          },
+        ],
       },
     ],
+  },
+  {
+    path: "/Signup",
+    element: <Home />,
+  },
+  {
+    path: "Login",
+    element: <Home />,
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace={true} />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(

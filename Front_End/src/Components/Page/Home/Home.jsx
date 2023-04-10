@@ -25,9 +25,9 @@ import "./style.css";
 
 import { Formik } from "formik";
 import * as yup from "yup";
-import qs from "qs";
 import axios from "axios";
 import FBXtoJSON from "../../Utils/FBXToJSON";
+import { useParams } from "react-router-dom";
 const Home = () => {
   const {
     data: wordList,
@@ -36,10 +36,11 @@ const Home = () => {
   } = useFetchData({
     url: "http://localhost:3333/words",
   });
-  console.log(wordList);
 
+  const { wordID, animationID } = useParams();
+
+  /*------------------------Form Handling--------------------------- */
   const [showAddWord, setShowAddWord] = useState(false);
-
   const handleClose = (setClose) => {
     setClose(false);
   };
@@ -120,14 +121,47 @@ const Home = () => {
                   </Button>
                 </Card.Header>
                 <Card.Body>
-                  <Card.Title>word</Card.Title>
+                  <Card.Title>word //wordID = {wordID}</Card.Title>
                   <Card.Text>description</Card.Text>
+                  <Card>
+                    <Card.Header
+                      as="h5"
+                      className="d-flex justify-content-between align-content-center"
+                    >
+                      <div className="d-flex align-content-center pt-2">
+                        Animation List
+                      </div>
+                    </Card.Header>
+                    <ListGroup as="ol" numbered variant="flush">
+                      <ListGroup.Item
+                        as="li"
+                        className="d-flex align-items-center"
+                      >
+                        <div className="d-flex flex-fill  justify-content-between align-items-center">
+                          <div className="d-flex justify-content-between align-items-center ps-1">
+                            Pattern 1 // animationID = {animationID}
+                          </div>
+                          <div className="d-flex justify-content-between align-items-center">
+                            <Button variant="primary" className="mx-2">
+                              Play
+                            </Button>
+                            <Button variant="warning" className="mx-2">
+                              Edit
+                            </Button>
+                            <Button variant="danger" className="mx-2">
+                              Delete
+                            </Button>
+                          </div>
+                        </div>
+                      </ListGroup.Item>
+                    </ListGroup>
+                  </Card>
+                  <Form.Group controlId="formFileLg" className="mb-3">
+                    <Form.Label>Upload FBX File</Form.Label>
+                    <Form.Control type="file" size="lg" />
+                  </Form.Group>
                 </Card.Body>
               </Card>
-              <Form.Group controlId="formFileLg" className="mb-3">
-                <Form.Label>Upload FBX File</Form.Label>
-                <Form.Control type="file" size="lg" />
-              </Form.Group>
             </Col>
             <Col>
               <Card>
