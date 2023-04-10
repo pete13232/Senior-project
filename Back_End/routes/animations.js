@@ -1,19 +1,21 @@
 const express = require('express')
 const router = express.Router()
 
-const { getAnimation, createAnimation, updateValidateLog, deleteAnimation } = require('../controllers/animations')
+const { getAnimation, createAnimation, updateValidateLog, deleteAnimation, getAnimationLog } = require('../controllers/animations')
 const { upload } = require('../controllers/multer')
+const Word = require('../models/Word')
+
 
 // Get All Animation
-router.route("/")
+router.route("/animations")
     .get(getAnimation)
 
 // Create New Animation
-router.route("/add")
+router.route("/animations/add")
     .post(upload.single('file'), createAnimation)
 
 // Update Validate log to Selected Animation
-router.route("/validate/:animationID")
+router.route("/animations/validate/:animationID")
     // .put((req, res) => {
     //     const animationID = req.params.animationID
     //     const validateLog = req.body.validateID
@@ -26,9 +28,12 @@ router.route("/validate/:animationID")
     // })
     .post(updateValidateLog)
 
-// Delete Selected Animation
-router.route("/delete/:animationID")
-    .delete(deleteAnimation)
+router.route("/animations/validateLog/:animationID")
+    .get(getAnimationLog)
 
+
+// Delete Selected Animation
+router.route("/animations/delete/:animationID")
+    .delete(deleteAnimation)
 
 module.exports = router

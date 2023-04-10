@@ -3,7 +3,7 @@ const router = express.Router()
 
 const ValidateLog = require("../models/ValidateLog")
 
-router.route("/")
+router.route("/validateLogs")
     .get((req, res) => {
         ValidateLog.find({}).then((doc, err) => {
             if (doc) res.json(doc)
@@ -12,7 +12,7 @@ router.route("/")
     })
 
 // Create New ValidateLog
-router.route("/add")
+router.route("/validateLogs/add")
     .post((req, res) => {
         const newValidateLog = ValidateLog({
             animation: req.body.animationID,

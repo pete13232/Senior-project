@@ -2,17 +2,23 @@ const express = require('express')
 const router = express.Router()
 
 const User = require('../models/User')
-const { getUser, createUser } = require('../controllers/users')
+const { getUser, createUser, getUserLog } = require('../controllers/users')
+const { requireAuth } = require('../middleware/authMiddleware')
 
 // Get all user
-router.route("/")
-    .get(getUser)
+router.route("/users")
+    .get(requireAuth, getUser)
 
 // Create New User
-router.route("/add")
+router.route("/users/add")
     .post(createUser)
 
 
+// Get All user Log
+router.route("/users/validateLog/:userID")
+    .get(getUserLog)
+
+    
 // router.route("/validate/:userID")
 //     // User Log
 //     .put((req, res) => {
