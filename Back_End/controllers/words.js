@@ -6,37 +6,58 @@ const getWord = async (req, res) => {
   try {
     // const foundWord = await Word.find({}).populate("animation", "file");
     const foundWord = await Word.find({});
-    res.json({ data: foundWord });
+    res.status(200).json({ data: foundWord });
   } catch (err) {
-    res.json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 
-// Search by word
-const getWordBySearch = async (req, res) => {
-  const { searchQuery } = req.query;
-  const searchWord = new RegExp(searchQuery, "i");
+// Get word by ID
+// const getWordByID = async (req, res) => {
+//   const { id } = req.query;
+
+//   try {
+//     const word = await Word.findById({ _id: id });
+//     res.json({ data: word });
+//   } catch (err) {
+//     res.json({ message: err.message });
+//   }
+// }
+
+// Get Word by ID
+const getWordByID = async (req, res) => {
+  const { id } = req.params;
 
   try {
-    const foundWord = await Word.find({ word: searchWord });
-    res.json({ data: foundWord });
+    const word = await Word.findById({ _id: id });
+    res.status(200).json({ data: word });
   } catch (err) {
-    res.json({ message: err.message });
+    res.status(400).json({ message: err.message });
+  }
+}
+
+// Search by word
+const getWordBySearch = async (req, res) => {
+  const { word } = req.query;
+  const searchWord = new RegExp(word, "i");
+  try {
+    const foundWord = await Word.find({ word: searchWord });
+    res.status(200).json({ data: foundWord });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 };
 
 // Create New Word
 const createWord = async (req, res) => {
-  const wordData = req.body;
-  console.log("wordData");
-  console.log(wordData);
-  const newWord = new Word(wordData);
+  const {word, description} = req.body;
+  const newWord = new Word({word, description});
 
   try {
     await newWord.save();
-    res.json(newWord);
+    res.status(201).json(newWord);
   } catch (err) {
-    res.json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 
@@ -46,7 +67,7 @@ const addAnimation = async (req, res) => {
   const { animationID } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(wordID)) {
-    res.send("This is not objectID");
+    res.status(400).json("This is not objectID");
   } else {
     try {
       const addedAnimation = await Word.findByIdAndUpdate(
@@ -54,9 +75,9 @@ const addAnimation = async (req, res) => {
         { $push: { animation: animationID } },
         { new: true }
       );
-      res.json(addedAnimation);
+      res.status(200).json(addedAnimation);
     } catch (err) {
-      res.json({ message: err.message });
+      res.status(400).json({ message: err.message });
     }
   }
 };
@@ -66,17 +87,17 @@ const deleteWord = async (req, res) => {
   const { wordID } = req.params;
   const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
   if (!verifyWordID) {
-    res.send("wordID is not ObjectID");
+    res.status(400).send("wordID is not ObjectID");
   } else {
     try {
       const deletedWord = await Word.findByIdAndDelete({ _id: wordID });
       if (deletedWord) {
-        res.json(`Word "${deletedWord.word}" has been deleted`);
+        res.status(200).json(`Word "${deletedWord.word}" has been deleted`);
       } else {
-        res.json("No word to delete");
+        res.status(200).json("No word to delete");
       }
     } catch (err) {
-      res.json({ message: err.message });
+      res.status(400).json({ message: err.message });
     }
   }
 };
@@ -87,4 +108,5 @@ module.exports = {
   createWord,
   addAnimation,
   deleteWord,
+  getWordByID
 };

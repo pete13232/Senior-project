@@ -2,11 +2,15 @@ const express = require('express')
 const router = express.Router()
 
 const Word = require('../models/Word')
-const { getWordBySearch, getWord, createWord, addAnimation, deleteWord } = require('../controllers/words')
+const { getWordBySearch, getWord, createWord, addAnimation, deleteWord, getWordByID } = require('../controllers/words')
 
 // Get all word
 router.route("/words")
     .get(getWord)
+
+// Search by word
+router.route("/words/search")
+    .get(getWordBySearch)
 
 // Create New Word
 router.route("/words/add")
@@ -20,10 +24,9 @@ router.route("/words/add/animation/:wordID")
 router.route("/words/delete/:wordID")
     .delete(deleteWord)
 
-// Search by word
-router.route("/words/search")
-    .get(getWordBySearch)
-
+// Get word By ID
+router.route("/words/:id")
+    .get(getWordByID)
 
 
 module.exports = router
