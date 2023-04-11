@@ -19,6 +19,7 @@ const UserSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ['guest', 'specialist', 'admin'],
+        lowercase: true,
         default: 'guest'
     }
     // animation: [{type:'ObjectId', ref:'Animation'}],

@@ -5,21 +5,26 @@ const { populate } = require("../models/Word");
 
 // Get all user
 const getUser = async (req, res) => {
-    try {
-        // const foundUser = await User.find({}).populate({
-        //     path: "validateLog",
-        //     // select: { user: 0 },
-        //     populate: {
-        //         path: "animationID",
-        //         // select: {
-        //         //     validateLog: 0
-        //         // }
-        //     }
-        // })
-        const foundUser = await User.find({})
-        res.json({ data: foundUser })
-    } catch (err) {
-        res.json({ message: err.message })
+    const role = res.locals.user.role
+    if(role.includes('admin')){
+        try {
+            // const foundUser = await User.find({}).populate({
+            //     path: "validateLog",
+            //     // select: { user: 0 },
+            //     populate: {
+            //         path: "animationID",
+            //         // select: {
+            //         //     validateLog: 0
+            //         // }
+            //     }
+            // })
+            const foundUser = await User.find({})
+            res.status(200).json({ data: foundUser })
+        } catch (err) {
+            res.status(400).json({ message: err.message })
+        }
+    }else{
+        res.status(403).json({errors: "You don't have permission"})
     }
 }
 
@@ -30,9 +35,9 @@ const createUser = async (req, res) => {
 
     try {
         await newUser.save()
-        res.json(newUser)
+        res.status(201).json(newUser)
     } catch (err) {
-        res.json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 }
 
@@ -47,9 +52,9 @@ const getUserLog = async (req, res) => {
                     path: "wordID"
                 }
             })
-        res.json({ userLog: userLog })
+            res.status(200).json({ userLog: userLog })
     } catch (err) {
-        res.json({ message: err.message })
+        res.status(400).json({ message: err.message })
     }
 }
 
