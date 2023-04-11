@@ -24,11 +24,43 @@ const getAnimation = async (req, res) => {
     //   })
     const foundAnimation = await Animation.find({}).populate('wordID')
 
-    res.json({ data: foundAnimation });
+    res.status(200).json({ data: foundAnimation });
   } catch (err) {
-    res.json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
+
+// Get Animation by wordID
+const getAnimationByWordID = async (req, res) => {
+  const { id, wordID } = req.query;
+
+  try {
+    let animation
+    if (id) {
+      animation = await Animation.findById({ _id: id });
+    }
+    if (wordID) {
+      console.log(wordID)
+      animation = await Animation.find({ wordID: wordID });
+    }
+    res.status(200).json({ data: animation });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+}
+
+// Get Animation by ID
+const getAnimationByID = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const animation = await Animation.findById({ _id: id });
+    res.status(200).json({ data: animation });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+}
+
 
 // Create New Animation
 const createAnimation = async (req, res) => {
@@ -36,21 +68,21 @@ const createAnimation = async (req, res) => {
   // const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
   const wordID_exist = await Word.countDocuments({ _id: wordID })
 
-    if (wordID_exist > 0) {
-      const newAnimation = new Animation({
-        wordID: wordID,
-        file: "http://localhost:3333/file/" + req.file.filename,
-      });
-      try {
-        await newAnimation.markModified("file");
-        await newAnimation.save();
-        res.json(newAnimation);
-      } catch (err) {
-        res.json({ message: err.message });
-      }
-    } else {
-      res.json("invalid wordID")
+  if (wordID_exist > 0) {
+    const newAnimation = new Animation({
+      wordID: wordID,
+      file: "http://localhost:3333/file/" + req.file.filename,
+    });
+    try {
+      await newAnimation.markModified("file");
+      await newAnimation.save();
+      res.status(201).json(newAnimation);
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
+  } else {
+    res.status(400).json("invalid wordID")
+  }
 };
 
 // Updata Validate log to Selected Animation (when user validate)
@@ -67,7 +99,7 @@ const updateValidateLog = async (req, res) => {
   const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
 
   if (!(verifyUserID && verifyAnimationID)) {
-    res.json("userID or animationID isn't ObjectID");
+    res.status(400).json("userID or animationID isn't ObjectID");
   } else {
     try {
       const validateLog = await newValidateLog.save();
@@ -83,15 +115,15 @@ const updateValidateLog = async (req, res) => {
             { _id: animationID },
             { $set: { validateLog: validateLog._id } }
           );
-          res.json(validateLog);
+          res.status(200).json(validateLog);
         } else {
-          res.json("userID doesn't exist");
+          res.status(404).json("userID doesn't exist");
         }
       } else {
-        res.json("Can't add validateLog to user or animation");
+        res.status(400).json("Can't add validateLog to user or animation");
       }
     } catch (err) {
-      res.json({ message: err.message });
+      res.status(400).json({ message: err.message });
     }
   }
 };
@@ -101,38 +133,38 @@ const deleteAnimation = async (req, res) => {
   const { animationID } = req.params;
   const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
   if (!verifyAnimationID) {
-    res.json("animationID isn't ObjectID");
+    res.status(400).json("animationID isn't ObjectID");
   } else {
     try {
       const deletedAnimation = await Animation.findByIdAndDelete({
         _id: animationID,
       });
       if (deletedAnimation) {
-        res.json(`Animation "${deleteAnimation.word}" has been deleted`);
+        res.status(200).json(`Animation "${deleteAnimation.word}" has been deleted`);
       } else {
-        res.json("No animation deleted");
+        res.status(200).json("No animation deleted");
       }
     } catch (err) {
-      res.json({ message: err.message });
+      res.status(400).json({ message: err.message });
     }
   }
 };
 
 // Get All animation validate log
 const getAnimationLog = async (req, res) => {
-  const {animationID} = req.params
+  const { animationID } = req.params
   try {
-    const animationLog = await ValidateLog.find({ animationID: animationID }).select({animationID:0})
-        .populate({
-            path: "userID",
-            // populate: {
-            //     path: "wordID"
-            // }
-        })
-    res.json({ animationLog: animationLog })
-} catch (err) {
-    res.json({ message: err.message })
-}
+    const animationLog = await ValidateLog.find({ animationID: animationID }).select({ animationID: 0 })
+      .populate({
+        path: "userID",
+        // populate: {
+        //     path: "wordID"
+        // }
+      })
+    res.status(200).json({ animationLog: animationLog })
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
 }
 
 module.exports = {
@@ -140,5 +172,7 @@ module.exports = {
   createAnimation,
   updateValidateLog,
   deleteAnimation,
-  getAnimationLog
+  getAnimationLog,
+  getAnimationByID,
+  getAnimationByWordID
 };

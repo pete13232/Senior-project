@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const { getAnimation, createAnimation, updateValidateLog, deleteAnimation, getAnimationLog } = require('../controllers/animations')
+const { getAnimation, createAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID } = require('../controllers/animations')
 const { upload } = require('../controllers/multer')
 const Word = require('../models/Word')
 
@@ -35,5 +35,17 @@ router.route("/animations/validateLog/:animationID")
 // Delete Selected Animation
 router.route("/animations/delete/:animationID")
     .delete(deleteAnimation)
+
+
+// Find animation By wordID
+router.route("/animations/get")
+    .get(getAnimationByWordID)
+
+
+// Find animation By ID
+router.route("/animations/:id")
+    .get(getAnimationByID)
+
+
 
 module.exports = router
