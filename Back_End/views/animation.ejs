@@ -18,31 +18,21 @@
 
             // get the value
             const val = form.validateStat.value
-            console.log(val)
             const validateStat = Boolean(val)
-
-            try {
-                const res = await fetch('/animations/validate/${animationID}', {
-                    method: 'POST',
-                    body: JSON.stringify({ validateStat   }),
-                    headers: { 'Content-Type': 'application/json' }
-                })
-                const data = await res.json()
-                console.log(data)
-                if (data.errors) {
-                    usernameError.textContent = data.errors.username
-                    passwordError.textContent = data.errors.password
-                    firstNameError.textContent = data.errors.firstName
-                    lastNameError.textContent = data.errors.lastName
-                }
-                if (data.newUser) {
-                    // location.assign('/')
-                    console.log("Your process is successful")
-                }
-            } catch (err) {
-                console.log(err)
-            }
+            const path = window.location.pathname; // "/users/123/profile"
+            const userId = path.split('/')[0];
+            console.log(userId); // "123"
+            
+            const res = await fetch('/animations/validate/${animationID}', {
+                method: 'POST',
+                body: JSON.stringify({ validateStat }),
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(response => response.json)
+                .then(data => console.log(data))
+                .catch(error => console.error(error))
         })
+
     </script>
 
     <%- include('partials/footer'); -%>

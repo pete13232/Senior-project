@@ -31,10 +31,9 @@ const checkUser = (req, res, next) => {
                 res.locals.user = null
                 next()
             } else {
-                // console.log(decodedToken)
+                console.log(decodedToken)
                 let user = await User.findById(decodedToken.id)
                 res.locals.user = user
-                // const permission = res.locals.user.role
                 next()
             }
         })
