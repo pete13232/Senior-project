@@ -4,7 +4,6 @@ const Word = require("../models/Word");
 // Get all word
 const getWord = async (req, res) => {
   try {
-    // const foundWord = await Word.find({}).populate("animation", "file");
     const foundWord = await Word.find({});
     res.status(200).json({ data: foundWord });
   } catch (err) {
@@ -12,24 +11,12 @@ const getWord = async (req, res) => {
   }
 };
 
-// Get word by ID
-// const getWordByID = async (req, res) => {
-//   const { id } = req.query;
-
-//   try {
-//     const word = await Word.findById({ _id: id });
-//     res.json({ data: word });
-//   } catch (err) {
-//     res.json({ message: err.message });
-//   }
-// }
-
 // Get Word by ID
 const getWordByID = async (req, res) => {
-  const { id } = req.params;
+  const { wordID } = req.params;
 
   try {
-    const word = await Word.findById({ _id: id });
+    const word = await Word.findById({ _id: wordID });
     res.status(200).json({ data: word });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -50,8 +37,8 @@ const getWordBySearch = async (req, res) => {
 
 // Create New Word
 const createWord = async (req, res) => {
-  const {word, description} = req.body;
-  const newWord = new Word({word, description});
+  const { word, description } = req.body;
+  const newWord = new Word({ word, description });
 
   try {
     await newWord.save();
@@ -82,6 +69,36 @@ const addAnimation = async (req, res) => {
   }
 };
 
+// Edit Selected Word
+const editWord = async (req, res) => {
+  const { wordID } = req.params
+  const { word, description } = req.body
+  const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
+  if (!verifyWordID) {
+    res.status(400).json("wordID isn't ObjectID");
+  } else {
+    try {
+      const updatedWord = await Word.findByIdAndUpdate(
+        { _id: wordID },
+        {
+          $set: {
+            word,
+            description,
+          }
+        },
+        { new: true }
+      );
+      if (updatedWord) {
+        res.status(200).json(updatedWord);
+      } else {
+        res.status(200).json("No word edited");
+      }
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+}
+
 // Delete Selected word
 const deleteWord = async (req, res) => {
   const { wordID } = req.params;
@@ -108,5 +125,6 @@ module.exports = {
   createWord,
   addAnimation,
   deleteWord,
-  getWordByID
+  getWordByID,
+  editWord
 };
