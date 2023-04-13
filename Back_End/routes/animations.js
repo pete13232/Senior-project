@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
 
-const { getAnimation, createAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID } = require('../controllers/animations')
+const { getAnimation, createAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID, updateValidateLog_get } = require('../controllers/animations')
 const { upload } = require('../controllers/multer')
 const Word = require('../models/Word')
+const { requireAuth, checkUser } = require('../middleware/authMiddleware')
 
 
 // Get All Animation
@@ -16,18 +17,10 @@ router.route("/animations/add")
 
 // Update Validate log to Selected Animation
 router.route("/animations/validate/:animationID")
-    // .put((req, res) => {
-    //     const animationID = req.params.animationID
-    //     const validateLog = req.body.validateID
-    //     Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: validateLog } }, { new: true })
-    //         .then((doc) => {
-    //             res.json(doc)
-    //         }).catch(err => {
-    //             res.json(err)
-    //         })
-    // })
-    .post(updateValidateLog)
+    .post(requireAuth, updateValidateLog)
 
+
+// Get All animation validate log
 router.route("/animations/validateLog/:animationID")
     .get(getAnimationLog)
 
@@ -43,7 +36,7 @@ router.route("/animations/get")
 
 
 // Find animation By ID
-router.route("/animations/:id")
+router.route("/animations/:animationID")
     .get(getAnimationByID)
 
 

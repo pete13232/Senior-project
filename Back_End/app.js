@@ -48,7 +48,7 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .catch((err) => console.log(err))
 
 // Routes
-app.get('*', checkUser)
+app.use('*', checkUser)
 app.use(userRoute);
 app.use(wordRoute);
 app.use(animationRoute);

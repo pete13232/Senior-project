@@ -9,19 +9,6 @@ const Word = require("../models/Word");
 // Get All Animation
 const getAnimation = async (req, res) => {
   try {
-    // const foundAnimation = await Animation.find({})
-    //   .populate("wordID")
-    //   .populate({
-    //     path: "validateLog",
-    //     select: { animation: 0, _id: 0 },
-    //     populate: {
-    //       path: "userID",
-    //       select: {
-    //         _id: 0,
-    //         username: 1,
-    //       },
-    //     },
-    //   })
     const foundAnimation = await Animation.find({}).populate('wordID')
 
     res.status(200).json({ data: foundAnimation });
@@ -51,10 +38,10 @@ const getAnimationByWordID = async (req, res) => {
 
 // Get Animation by ID
 const getAnimationByID = async (req, res) => {
-  const { id } = req.params;
+  const { animationID } = req.params;
 
   try {
-    const animation = await Animation.findById({ _id: id });
+    const animation = await Animation.findById({ _id: animationID });
     res.status(200).json({ data: animation });
   } catch (err) {
     res.status(400).json({ message: err.message });
@@ -85,18 +72,23 @@ const createAnimation = async (req, res) => {
   }
 };
 
-// Updata Validate log to Selected Animation (when user validate)
+const updateValidateLog_get = (req, res) => {
+  res.render('animation')
+}
+
+// Update Validate log to Selected Animation (when user validate)
 const updateValidateLog = async (req, res) => {
   const { animationID } = req.params;
-  const { userID } = req.body;
+  const userID = res.locals.user._id
   const { validateStat } = req.body;
+  const verifyUserID = mongoose.Types.ObjectId.isValid(userID);
+  const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
+
   const newValidateLog = new ValidateLog({
     animationID: animationID,
     userID: userID,
     validateStat: validateStat,
   });
-  const verifyUserID = mongoose.Types.ObjectId.isValid(userID);
-  const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
 
   if (!(verifyUserID && verifyAnimationID)) {
     res.status(400).json("userID or animationID isn't ObjectID");
@@ -157,10 +149,8 @@ const getAnimationLog = async (req, res) => {
     const animationLog = await ValidateLog.find({ animationID: animationID }).select({ animationID: 0 })
       .populate({
         path: "userID",
-        // populate: {
-        //     path: "wordID"
-        // }
       })
+
     res.status(200).json({ animationLog: animationLog })
   } catch (err) {
     res.status(400).json({ message: err.message })
@@ -174,5 +164,6 @@ module.exports = {
   deleteAnimation,
   getAnimationLog,
   getAnimationByID,
-  getAnimationByWordID
+  getAnimationByWordID,
+  updateValidateLog_get
 };
