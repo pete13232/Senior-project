@@ -22,12 +22,7 @@ const UserSchema = new mongoose.Schema({
         lowercase: true,
         default: 'guest'
     }
-    // animation: [{type:'ObjectId', ref:'Animation'}],
-    // validateLog: [{type:'ObjectId', ref:'ValidateLog'}]
 })
-
-// const Animation = require("./Animation")
-// const ValidateLog = require("./ValidateLog")
 
 // Hash password before doc saved to db
 UserSchema.pre('save', async function (next) {
