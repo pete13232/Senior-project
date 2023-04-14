@@ -5,16 +5,11 @@ const { populate } = require("../models/Word");
 
 // Get all user
 const getUser = async (req, res) => {
-    const role = res.locals.user.role
-    if (role.includes('admin')) {
-        try {
-            const foundUser = await User.find({})
-            res.status(200).json({ data: foundUser })
-        } catch (err) {
-            res.status(400).json({ message: err.message })
-        }
-    } else {
-        res.status(403).json({ errors: "You don't have permission" })
+    try {
+        const foundUser = await User.find({})
+        res.status(200).json({ data: foundUser })
+    } catch (err) {
+        res.status(400).json({ message: err.message })
     }
 }
 

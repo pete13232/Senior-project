@@ -13,4 +13,7 @@ const ValidateLogSchema = new mongoose.Schema({
     validateStat: { type: Boolean, default: false },
 })
 
+const Animation = require('./Animation')
+const User = require('./User')
+
 module.exports = mongoose.model('ValidateLog', ValidateLogSchema)

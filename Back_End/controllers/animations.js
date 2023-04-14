@@ -51,7 +51,7 @@ const getAnimationByID = async (req, res) => {
 
 // Create New Animation
 const createAnimation = async (req, res) => {
-  const { wordID } = req.body
+  const { wordID } = req.query
   // const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
   const wordID_exist = await Word.countDocuments({ _id: wordID })
 
@@ -76,7 +76,7 @@ const updateValidateLog_get = (req, res) => {
   res.render('animation')
 }
 
-// Update Validate log to Selected Animation (when user validate)
+// Validate Animation
 const updateValidateLog = async (req, res) => {
   const { animationID } = req.params;
   const userID = res.locals.user._id
