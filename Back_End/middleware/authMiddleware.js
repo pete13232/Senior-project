@@ -11,7 +11,7 @@ const requireAuth = (req, res, next) => {
                 console.log(err.message)
                 res.redirect('/login')
             } else {
-                console.log(decodedToken)
+                // console.log(decodedToken)
                 next()
             }
         })
@@ -34,13 +34,24 @@ const checkUser = (req, res, next) => {
                 console.log(decodedToken)
                 let user = await User.findById(decodedToken.id)
                 res.locals.user = user
+                console.log(res.locals.user)
                 next()
             }
         })
     } else {
-        res.locals.user = null
+        res.locals.user = new User({})
         next()
     }
 }
 
-module.exports = { requireAuth, checkUser }
+
+const checkPermission = (role) => (req, res, next) => {
+    if (role.includes(res.locals.user.role)) {
+        next()
+    } else {
+        res.status(403).json("You don't have permissoin")
+    }
+}
+
+
+module.exports = { requireAuth, checkUser, checkPermission }

@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 
 // Create Model (Compiled from Schema, instance of model is "Document")
 const ValidateLogSchema = new mongoose.Schema({
-    // wordID: {type:String, trim:true, default:''},
     animationID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Animation"
@@ -14,6 +13,7 @@ const ValidateLogSchema = new mongoose.Schema({
     validateStat: { type: Boolean, default: false },
 })
 
-const Animation = require("./Animation")
-const User = require("./User")
+const Animation = require('./Animation')
+const User = require('./User')
+
 module.exports = mongoose.model('ValidateLog', ValidateLogSchema)
