@@ -15,7 +15,7 @@ import Signup from "./Components/Page/Signup/Signup";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: <Layout />,
     children: [
       {
         path: "words/:wordID",
@@ -31,23 +31,26 @@ const router = createBrowserRouter([
           },
         ],
       },
+      {
+        path: "",
+        element: <Home />,
+      },
+      {
+        path: "/Signup",
+        element: <Signup />,
+      },
+      {
+        path: "/Login",
+        element: <Login />,
+      },
     ],
   },
-  {
-    path: "/Signup",
-    element: <Signup />,
-  },
-  {
-    path: "Login",
-    element: <Login />,
-  },
+
   {
     path: "*",
     element: <Navigate to="/" replace={true} />,
   },
 ]);
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <Layout>
-    <RouterProvider router={router} />
-  </Layout>
+  <RouterProvider router={router} />
 );

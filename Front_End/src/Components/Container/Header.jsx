@@ -8,17 +8,20 @@ import {
   Col,
 } from "react-bootstrap";
 import "./style.css";
-import { FaUserCircle, } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
+import { Link } from "react-router-dom";
 const Header = () => {
   return (
     <>
       <Navbar variant="dark" className="Navbar">
         <Container
           fluid
-          className="d-flex justify-content-start align-content-center px-5"
+          className="d-flex justify-content-start align-items-center px-5"
         >
           <Col sm={1}>
-            <Navbar.Brand href="#home">TSL</Navbar.Brand>
+            <Navbar.Brand>
+              <Link to="/">TSL</Link>
+            </Navbar.Brand>
           </Col>
           <Col sm={8} md={6}>
             <Form className="d-flex">
@@ -33,7 +36,11 @@ const Header = () => {
           </Col>
           <Col>
             <div className="d-flex justify-content-end">
-              <FaUserCircle color="white" size={24} />
+              <Link to="/login">
+                <Button variant="outline-light">Login</Button>
+              </Link>
+
+              {/* <FaUserCircle color="white" size={24} /> */}
             </div>
           </Col>
         </Container>

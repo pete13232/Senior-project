@@ -57,16 +57,16 @@ const Signup = () => {
                 />
               </Form.Group>
               <Form.Group controlId="formBasicFirstname" className="py-2">
-                <Form.Label>Firstname</Form.Label>
+                <Form.Label>First name</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter Firstname"
+                  placeholder="Enter First name"
                   value={firstname}
                   onChange={(e) => setFirstname(e.target.value)}
                 />
               </Form.Group>
               <Form.Group controlId="formBasicLastname" className="py-2">
-                <Form.Label>Lastname</Form.Label>
+                <Form.Label>Last name</Form.Label>
                 <Form.Control
                   type="text"
                   placeholder="Enter Last name"
@@ -75,8 +75,8 @@ const Signup = () => {
                 />
               </Form.Group>
 
-              <Button variant="primary" type="submit" className="py-2">
-                Submit
+              <Button variant="primary" type="submit" className="my-2">
+                Signup
               </Button>
             </Form>
           </Card.Body>

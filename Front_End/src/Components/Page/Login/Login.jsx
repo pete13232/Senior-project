@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -27,7 +28,7 @@ const Login = () => {
           <Card.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail" className="py-2">
-                <Form.Label>Email address</Form.Label>
+                <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
                   placeholder="Enter email"
@@ -44,9 +45,17 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </Form.Group>
-              <Button variant="primary" type="submit" className="py-2">
-                Submit
-              </Button>
+              <div className="d-flex justify-content-start align-items-center">
+                <Button variant="primary" type="submit" className="d-flex my-2">
+                  Login
+                </Button>
+                <Link
+                  to="/signup"
+                  className="d-flex justify-content-center align-items-center signup-text ps-2"
+                >
+                  Sign up
+                </Link>
+              </div>
             </Form>
           </Card.Body>
         </Card>
