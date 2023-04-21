@@ -4,9 +4,7 @@ const mongoose = require('mongoose')
 const wordSchema = new mongoose.Schema({
     word: {type:String, trim:true, default:'', required: true},
     description: {type:String, trim:true, default:'', required: true},
-    // animation: [{type:'ObjectId', ref:'Animation'}]
 })
 
-const Animation = require("./Animation")
 
 module.exports = mongoose.model('Word', wordSchema)

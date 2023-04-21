@@ -16,6 +16,12 @@
         <label for="lastName">lastName</label>
         <input type="text" name="lastName" required>
         <div class="lastName error"></div>
+        <label for="role">role</label>
+        <select name="role" id="role">
+            <option value="guest" selected>guest</option>
+            <option value="specialist">specialist</option>
+            <option value="admin">admin</option>
+        </select>
         <button>Sign up</button>
     </form>
 
@@ -40,11 +46,12 @@
             const password = form.password.value
             const firstName = form.firstName.value
             const lastName = form.lastName.value
+            const role = form.role.value
 
             try {
                 const res = await fetch('/signup', {
                     method: 'POST',
-                    body: JSON.stringify({ username, password, firstName, lastName }),
+                    body: JSON.stringify({ username, password, firstName, lastName, role }),
                     headers: { 'Content-Type': 'application/json' }
                 })
                 const data = await res.json()
