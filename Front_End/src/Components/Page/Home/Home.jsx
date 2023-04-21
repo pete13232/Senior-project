@@ -36,7 +36,7 @@ const Home = () => {
   } = useFetchData({
     url: "http://localhost:3333/words",
   });
-
+  console.log(wordList);
   const { wordID, animationID } = useParams();
 
   /*------------------------Form Handling--------------------------- */
@@ -96,7 +96,7 @@ const Home = () => {
                   >
                     <Canvas />
                   </div>
-                  <div className="d-flex justify-content-center align-content-center pt-3">
+                  <div className="d-flex justify-content-center align-items-center pt-3">
                     <Button variant="primary" className="mx-2">
                       <FaFastBackward color="white" size={16} />
                     </Button>
@@ -113,10 +113,10 @@ const Home = () => {
                 <Card.Header
                   as="h5"
                   bg="primary"
-                  className="d-flex justify-content-between align-content-center"
+                  className="d-flex justify-content-between align-items-center"
                 >
-                  <div className="d-flex align-content-center pt-2">Detail</div>
-                  <Button className="d-flex align-content-center">
+                  <div className="d-flex align-items-center pt-2">Detail</div>
+                  <Button className="d-flex align-items-center">
                     <FaEdit color="white" size={16} />
                   </Button>
                 </Card.Header>
@@ -126,9 +126,9 @@ const Home = () => {
                   <Card>
                     <Card.Header
                       as="h5"
-                      className="d-flex justify-content-between align-content-center"
+                      className="d-flex justify-content-between align-items-center"
                     >
-                      <div className="d-flex align-content-center pt-2">
+                      <div className="d-flex align-items-center pt-2">
                         Animation List
                       </div>
                     </Card.Header>
@@ -168,11 +168,11 @@ const Home = () => {
                 <Card.Header
                   as="h5"
                   bg="primary"
-                  className="d-flex justify-content-between align-content-center"
+                  className="d-flex justify-content-between align-items-center"
                 >
-                  <div className="d-flex align-content-center pt-2">Words</div>
+                  <div className="d-flex align-items-center pt-2">Words</div>
                   <Button
-                    className="d-flex align-content-center"
+                    className="d-flex align-items-center"
                     onClick={() => handleShow(setShowAddWord)}
                   >
                     <FaPlus color="white" size={16} />
