@@ -19,13 +19,10 @@ const getAnimation = async (req, res) => {
 
 // Get Animation by wordID
 const getAnimationByWordID = async (req, res) => {
-  const { id, wordID } = req.query;
+  const { wordID } = req.query;
 
   try {
     let animation
-    if (id) {
-      animation = await Animation.findById({ _id: id });
-    }
     if (wordID) {
       console.log(wordID)
       animation = await Animation.find({ wordID: wordID });
