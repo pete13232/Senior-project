@@ -31,12 +31,12 @@ router.route("/animations/delete/:animationID")
 
 // Find animation By wordID
 router.route("/animations/get")
-    .get([requireAuth, checkPermission(['admin', 'specialist', 'guest'])], getAnimationByWordID)
+    .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByWordID)
 
 
 // Find animation By ID
 router.route("/animations/:animationID")
-    .get([requireAuth, checkPermission(['admin', 'specialist', 'guest'])], getAnimationByID)
+    .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByID)
 
 
 
