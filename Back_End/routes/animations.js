@@ -12,7 +12,7 @@ router.route("/animations")
 
 // Create New Animation
 router.route("/animations/add")
-    .post(upload.single('file'), createAnimation)
+    .post(createAnimation)
 
 // Validate Animation
 router.route("/animations/validate/:animationID")
