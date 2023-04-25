@@ -1,16 +1,11 @@
-const path = require("path");
-
-// For Upload File
+const util = require('util')
 const multer = require("multer");
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "Uploaded");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
 
-const upload = multer({ storage: storage });
+const storage = multer.memoryStorage()
 
-module.exports = { multer, storage, upload };
+let upload = multer({
+  storage: storage,
+}).single("file");
+
+let uploadMiddleware = util.promisify(upload)
+module.exports = uploadMiddleware;

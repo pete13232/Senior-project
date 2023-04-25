@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@google-cloud/storage": "^6.9.5",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "cookie-parser": "^1.4.6",
