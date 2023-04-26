@@ -1,10 +1,14 @@
 const { default: mongoose } = require("mongoose");
-const fs = require("fs");
-const path = require("path");
 const Animation = require("../models/Animation");
 const User = require("../models/User");
 const ValidateLog = require("../models/ValidateLog");
 const Word = require("../models/Word");
+const upload = require("../middleware/multer")
+const { format } = require("util");
+const { Storage } = require("@google-cloud/storage");
+// Instantiate a storage client with credentials
+const storage = new Storage({ keyFilename: "google-cloud-key.json" });
+const bucket = storage.bucket("pete-bucket-1068");
 
 // Get All Animation
 const getAnimation = async (req, res) => {
@@ -19,13 +23,10 @@ const getAnimation = async (req, res) => {
 
 // Get Animation by wordID
 const getAnimationByWordID = async (req, res) => {
-  const { id, wordID } = req.query;
+  const { wordID } = req.query;
 
   try {
     let animation
-    if (id) {
-      animation = await Animation.findById({ _id: id });
-    }
     if (wordID) {
       console.log(wordID)
       animation = await Animation.find({ wordID: wordID });
@@ -56,17 +57,45 @@ const createAnimation = async (req, res) => {
   const wordID_exist = await Word.countDocuments({ _id: wordID })
 
   if (wordID_exist > 0) {
-    const newAnimation = new Animation({
-      wordID: wordID,
-      file: "http://localhost:3333/file/" + req.file.filename,
-    });
-    try {
-      await newAnimation.markModified("file");
-      await newAnimation.save();
-      res.status(201).json(newAnimation);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    await upload(req, res)
+    req.file.originalname = Date.now() + '-' + req.file.originalname
+
+    if (!req.file) {
+      return res.status(400).send({ message: "Please upload a file!" });
     }
+
+    // Create a new blob in the bucket and upload the file data.
+    const blob = bucket.file(req.file.originalname);
+
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+    });
+
+    blobStream.on("error", (err) => {
+      res.status(500).send({ message: err.message });
+    });
+
+    blobStream.on("finish", async (data) => {
+      // Create URL for directly file access via HTTP.
+      const publicUrl = format(
+        `https://storage.googleapis.com/${bucket.name}/${blob.name}`
+      );
+
+      const newAnimation = new Animation({
+        wordID: wordID,
+        file: publicUrl,
+      });
+      try {
+        await newAnimation.markModified("file");
+        await newAnimation.save();
+        res.status(201).json(newAnimation);
+      } catch (err) {
+        res.status(400).json({ message: err.message });
+      }
+    });
+
+    blobStream.end(req.file.buffer);
+
   } else {
     res.status(400).json("invalid wordID")
   }

@@ -12,7 +12,7 @@ router.route("/animations")
 
 // Create New Animation
 router.route("/animations/add")
-    .post(upload.single('file'), createAnimation)
+    .post(createAnimation)
 
 // Validate Animation
 router.route("/animations/validate/:animationID")
@@ -31,12 +31,12 @@ router.route("/animations/delete/:animationID")
 
 // Find animation By wordID
 router.route("/animations/get")
-    .get([requireAuth, checkPermission(['admin', 'specialist', 'guest'])], getAnimationByWordID)
+    .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByWordID)
 
 
 // Find animation By ID
 router.route("/animations/:animationID")
-    .get([requireAuth, checkPermission(['admin', 'specialist', 'guest'])], getAnimationByID)
+    .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByID)
 
 
 
