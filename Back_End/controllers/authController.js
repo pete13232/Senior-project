@@ -62,19 +62,29 @@ const login_post = async (req, res) => {
     try {
         const newUser = await User.login(username, password)
         const token = createToken(newUser._id)
+
         // for front-end domain localhost:3000 
+        // res.cookie('jwt', token, {
+        //     httpOnly: true,
+        //     maxAge: maxAge * 1000,
+        //     domain: 'localhost:3000',
+        //     path: '/'
+        // })
+        //  // for back-end domain localhost:3333 
         res.cookie('jwt', token, {
             httpOnly: true,
             maxAge: maxAge * 1000,
-            domain: 'localhost:3000',
-            path: '/'
         })
-         // for front-end domain localhost:3333 
-        res.cookie('jwt', token, {
-            httpOnly: true,
-            maxAge: maxAge * 1000,
+        res.status(200).json({
+            token: token,
+            newUser: {
+                _id: newUser._id,
+                username: newUser.username,
+                role: newUser.role,
+                firstName: newUser.firstName,
+                lastName: newUser.lastName
+            }
         })
-        res.status(200).json({ newUser: newUser._id })
     } catch (err) {
         const errors = handleErrors(err)
         res.status(400).json({ errors })
