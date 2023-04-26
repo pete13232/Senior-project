@@ -60,9 +60,20 @@ const login_post = async (req, res) => {
     const { username, password } = req.body
 
     try {
-        const newUser = await User.login(username, password )
+        const newUser = await User.login(username, password)
         const token = createToken(newUser._id)
-        res.cookie('jwt', token, { httpOnly: true, maxAge: maxAge * 1000 })
+        // for front-end domain localhost:3000 
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            maxAge: maxAge * 1000,
+            domain: 'localhost:3000',
+            path: '/'
+        })
+         // for front-end domain localhost:3333 
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            maxAge: maxAge * 1000,
+        })
         res.status(200).json({ newUser: newUser._id })
     } catch (err) {
         const errors = handleErrors(err)
@@ -79,7 +90,7 @@ const login_get = (req, res) => {
 }
 
 const logout_get = (req, res) => {
-    res.cookie('jwt', '', {maxAge: 1})
+    res.cookie('jwt', '', { maxAge: 1 })
     res.redirect('/')
 }
 
