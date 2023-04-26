@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
-
+import "./style.css";
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,27 +15,22 @@ const Signup = () => {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#f5f5f5",
-      }}
+    <div className="background"
     >
       <Col md={4}>
         <Card>
-          <Card.Header as="h5">Signup</Card.Header>
+          <Card.Header as="h3" className="signupcard-header">
+            Signup
+          </Card.Header>
           <Card.Body>
             <Form onSubmit={handleSubmit}>
-              <Form.Group controlId="formBasicEmail" className="py-2">
-                <Form.Label>Email address</Form.Label>
+              <Form.Group controlId="formBasicUsername" className="py-2">
+                <Form.Label>Username</Form.Label>
                 <Form.Control
-                  type="email"
-                  placeholder="Enter email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Enter Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </Form.Group>
               <Form.Group controlId="formBasicPassword" className="py-2">
@@ -47,15 +42,17 @@ const Signup = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </Form.Group>
-              <Form.Group controlId="formBasicUsername" className="py-2">
-                <Form.Label>Username</Form.Label>
+
+              <Form.Group controlId="formBasicEmail" className="py-2">
+                <Form.Label>Email address</Form.Label>
                 <Form.Control
-                  type="text"
-                  placeholder="Enter Username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  type="email"
+                  placeholder="Enter email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Form.Group>
+
               <Form.Group controlId="formBasicFirstname" className="py-2">
                 <Form.Label>First name</Form.Label>
                 <Form.Control

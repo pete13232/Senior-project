@@ -1,39 +1,53 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
-import { Link } from "react-router-dom";
-
+import { Link, redirect } from "react-router-dom";
+import "./style.css";
+import axios from "axios";
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(`username: ${username}, password: ${password}`);
 
-    console.log(`Email: ${email}, Password: ${password}`);
+    console.log(JSON.stringify({ username, password }));
+
+    axios
+      .post(
+        "http://localhost:3333/login",
+        JSON.stringify({ username, password }),
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      )
+      .then((res) => {
+        console.log(res.data);
+        alert("Pass new User =" + res.data);
+        redirect("/");
+      })
+      .catch((error) => {
+        alert("There was an error!" + error);
+        console.error("There was an error!", error);
+      });
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        backgroundColor: "#f5f5f5",
-      }}
-    >
+    <div className="background">
       <Col md={4}>
         <Card>
-          <Card.Header as="h5">Login</Card.Header>
+          <Card.Header as="h3" className="logincard-header">
+            Login
+          </Card.Header>
           <Card.Body>
             <Form onSubmit={handleSubmit}>
               <Form.Group controlId="formBasicEmail" className="py-2">
-                <Form.Label>Email</Form.Label>
+                <Form.Label>Username</Form.Label>
                 <Form.Control
-                  type="email"
-                  placeholder="Enter email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Enter username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                 />
               </Form.Group>
               <Form.Group controlId="formBasicPassword" className="py-2">

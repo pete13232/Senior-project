@@ -55,31 +55,43 @@ const Home = () => {
   });
 
   const submitAddWord = (values) => {
-    FBXtoJSON({ file: values.animation }).then((result) => {
-      // values.animation = result;
-      // delete values.animation.tracks;
+    const wordForm = new FormData();
+    wordForm.append("word", values.word);
+    wordForm.append("description", values.description);
+    axios
+      .post("http://localhost:3333/words/add", wordForm)
+      .then((res) => {
+        console.log(res);
+        if (values.animation !== undefined) {
+          console.log("values.animation", values.animation);
 
-      const blob = new Blob([JSON.stringify(result)], {
-        type: "application/json",
+          // FBXtoJSON({ file: values.animation }).then((result) => {
+          //   const blob = new Blob([JSON.stringify(result)], {
+          //     type: "application/json",
+          //   });
+          //   const formData = new FormData();
+          //   formData.append("word", values.word);
+          //   formData.append("file", blob, values.word + "animation_clip");
+          //   const reader = new FileReader();
+          //   reader.readAsText(blob);
+          //   reader.onload = () => {
+          //     const data = JSON.parse(reader.result);
+          //     console.log(data); // logs the parsed JSON data
+          //   };
+          //   axios
+          //     .post("http://localhost:3333/animations/add", formData)
+          //     .then((res) => {
+          //       console.log(res);
+          //     })
+          //     .catch((error) => {
+          //       console.error("There was an error!", error);
+          //     });
+          // });
+        }
+      })
+      .catch((error) => {
+        console.error("There was an error!", error);
       });
-      const formData = new FormData();
-      formData.append("word", values.word);
-      formData.append("file", blob, values.word + "animation_clip");
-      const reader = new FileReader();
-      reader.readAsText(blob);
-      reader.onload = () => {
-        const data = JSON.parse(reader.result);
-        console.log(data); // logs the parsed JSON data
-      };
-      axios
-        .post("http://localhost:3333/animations/add", formData)
-        .then((res) => {
-          console.log(res);
-        })
-        .catch((error) => {
-          console.error("There was an error!", error);
-        });
-    });
   };
 
   return (
@@ -113,7 +125,7 @@ const Home = () => {
                 <Card.Header
                   as="h5"
                   bg="primary"
-                  className="d-flex justify-content-between align-items-center"
+                  className="d-flex justify-content-between align-items-center maincard-header"
                 >
                   <div className="d-flex align-items-center pt-2">Detail</div>
                   <Button className="d-flex align-items-center">
@@ -126,7 +138,7 @@ const Home = () => {
                   <Card>
                     <Card.Header
                       as="h5"
-                      className="d-flex justify-content-between align-items-center"
+                      className="d-flex justify-content-between align-items-center infocard-header"
                     >
                       <div className="d-flex align-items-center pt-2">
                         Animation List
@@ -168,7 +180,7 @@ const Home = () => {
                 <Card.Header
                   as="h5"
                   bg="primary"
-                  className="d-flex justify-content-between align-items-center"
+                  className="d-flex justify-content-between align-items-center maincard-header"
                 >
                   <div className="d-flex align-items-center pt-2">Words</div>
                   <Button
@@ -207,6 +219,8 @@ const Home = () => {
               </Card>
             </Col>
           </Row>
+
+          {/*-------------------------------- Add Word Modal------------------------------------ */}
           <Modal show={showAddWord} onHide={() => handleClose(setShowAddWord)}>
             <Formik
               initialValues={{
@@ -292,6 +306,7 @@ const Home = () => {
               )}
             </Formik>
           </Modal>
+          {/*-------------------------------- Add Word Modal------------------------------------ */}
         </Container>
       )}
     </>
