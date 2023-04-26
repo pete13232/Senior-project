@@ -78,6 +78,7 @@ const login_post = async (req, res) => {
         res.status(200).json({
             token: token,
             newUser: {
+                _id: newUser._id,
                 username: newUser.username,
                 role: newUser.role,
                 firstName: newUser.firstName,
