@@ -68,17 +68,11 @@ const login_post = async (req, res) => {
         const token = createToken(newUser._id)
 
         // for front-end domain localhost:3000 
+        //  // for back-end domain localhost:3333 
         // res.cookie('jwt', token, {
         //     httpOnly: true,
         //     maxAge: maxAge * 1000,
-        //     domain: 'localhost:3000',
-        //     path: '/'
         // })
-        //  // for back-end domain localhost:3333 
-        res.cookie('jwt', token, {
-            httpOnly: true,
-            maxAge: maxAge * 1000,
-        })
         res.status(200).json({
             token: token,
             newUser: {

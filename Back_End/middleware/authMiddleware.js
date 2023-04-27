@@ -2,27 +2,32 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/User')
 
 const requireAuth = (req, res, next) => {
-    const token = req.cookies.jwt
-
+    // const token = req.cookies.jwt
+    if (!req.headers.authorization) {
+        return res.status(403).json({ error: 'No credentials sent!' });
+    }
+    const token = req.headers.authorization.split(' ')[1]
+    console.log(token)
     // check json web token exists & if verified
     if (token) {
         jwt.verify(token, 'tsl project secret', (err, decodedToken) => {
             if (err) {
-                console.log(err.message)
-                res.redirect('/login')
+                res.json({ message: err.message })
+                // res.redirect('/login')
             } else {
                 // console.log(decodedToken)
                 next()
             }
         })
     } else {
-        res.redirect('/login')
+        // res.redirect('/login')
+        res.json({ message: "Please Login" })
     }
 }
 
 // check current user
 const checkUser = (req, res, next) => {
-    const token = req.cookies.jwt
+    const token = req.headers.authorization.split(' ')[1]
 
     if (token) {
         jwt.verify(token, 'tsl project secret', async (err, decodedToken) => {
