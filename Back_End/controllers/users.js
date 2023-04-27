@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose");
 const User = require("../models/User");
 const ValidateLog = require("../models/ValidateLog");
 const { populate } = require("../models/Word");
+const upload = require('../middleware/multer');
 
 // Get all user
 const getUser = async (req, res) => {
@@ -15,8 +16,9 @@ const getUser = async (req, res) => {
 
 // Create New User
 const createUser = async (req, res) => {
-    const userData = req.body
-    const newUser = new User(userData)
+    await upload(req, res)
+    const { username, password, firstName, lastName, role } = req.body
+    const newUser = new User({username, password, firstName, lastName, role})
 
     try {
         await newUser.save()
@@ -46,6 +48,7 @@ const getUserLog = async (req, res) => {
 // Edit Selected User
 const editUser = async (req, res) => {
     const { userID } = req.params
+    await upload(req, res)
     const { password, firstName, lastName } = req.body
     const verifyUserID = mongoose.Types.ObjectId.isValid(userID);
     if (!verifyUserID) {
