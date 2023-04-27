@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 const Header = () => {
   return (
     <>
-      <Navbar variant="dark" className="Navbar">
+      <Navbar fixed="top" variant="dark" className="Navbar">
         <Container
           fluid
           className="d-flex justify-content-start align-items-center px-5"
