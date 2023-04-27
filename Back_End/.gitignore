@@ -10,6 +10,7 @@ lerna-debug.log*
 Uploaded
 node_modules
 Uploaded
+google-cloud-key.json
 
 dist
 dist-ssr

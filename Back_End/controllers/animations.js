@@ -59,7 +59,6 @@ const createAnimation = async (req, res) => {
   if (wordID_exist > 0) {
     await upload(req, res)
     req.file.originalname = Date.now() + '-' + req.file.originalname
-
     if (!req.file) {
       return res.status(400).send({ message: "Please upload a file!" });
     }
