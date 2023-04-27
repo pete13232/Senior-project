@@ -1,105 +1,199 @@
-const { default: mongoose } = require('mongoose')
-const fs = require("fs")
-const path = require('path')
-const Animation = require('../models/Animation')
-const User = require('../models/User')
-const ValidateLog = require('../models/ValidateLog')
+const { default: mongoose } = require("mongoose");
+const Animation = require("../models/Animation");
+const User = require("../models/User");
+const ValidateLog = require("../models/ValidateLog");
+const Word = require("../models/Word");
+const upload = require("../middleware/multer")
+const { format } = require("util");
+const { Storage } = require("@google-cloud/storage");
+// Instantiate a storage client with credentials
+const storage = new Storage({ keyFilename: "google-cloud-key.json" });
+const bucket = storage.bucket("pete-bucket-1068");
 
 // Get All Animation
 const getAnimation = async (req, res) => {
-    try {
-        const foundAnimation = await Animation.find({}).populate({
-            path: "validateLog",
-            select: { animation: 0, _id: 0 },
-            populate: {
-                path: "user",
-                select: {
-                    _id: 0,
-                    username: 1
-                }
-            }
-        })
+  try {
+    const foundAnimation = await Animation.find({}).populate('wordID')
 
-        res.json({ data: foundAnimation })
-    } catch (error) {
-        res.json({ message: error.message })
+    res.status(200).json({ data: foundAnimation });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// Get Animation by wordID
+const getAnimationByWordID = async (req, res) => {
+  const { wordID } = req.query;
+
+  try {
+    let animation
+    if (wordID) {
+      console.log(wordID)
+      animation = await Animation.find({ wordID: wordID });
     }
+    res.status(200).json({ data: animation });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
 }
+
+// Get Animation by ID
+const getAnimationByID = async (req, res) => {
+  const { animationID } = req.params;
+
+  try {
+    const animation = await Animation.findById({ _id: animationID });
+    res.status(200).json({ data: animation });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+}
+
 
 // Create New Animation
 const createAnimation = async (req, res) => {
-    const data = fs.readFileSync(path.join(__dirname, '..'+ '/Uploaded/', req.file.filename), "utf-8")
-    const file = JSON.parse(data) // convert JSON string to JSON Object
-    const newAnimation = new Animation({
-        word: req.body.word,
-        file: file
-    })
+  const { wordID } = req.query
+  // const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
+  const wordID_exist = await Word.countDocuments({ _id: wordID })
 
-    try {
-        await newAnimation.markModified('file')
-        await newAnimation.save()
-        res.json(newAnimation)
-    } catch (error) {
-        res.json({ message: error.message })
+  if (wordID_exist > 0) {
+    await upload(req, res)
+    req.file.originalname = Date.now() + '-' + req.file.originalname
+
+    if (!req.file) {
+      return res.status(400).send({ message: "Please upload a file!" });
     }
+
+    // Create a new blob in the bucket and upload the file data.
+    const blob = bucket.file(req.file.originalname);
+
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+    });
+
+    blobStream.on("error", (err) => {
+      res.status(500).send({ message: err.message });
+    });
+
+    blobStream.on("finish", async (data) => {
+      // Create URL for directly file access via HTTP.
+      const publicUrl = format(
+        `https://storage.googleapis.com/${bucket.name}/${blob.name}`
+      );
+
+      const newAnimation = new Animation({
+        wordID: wordID,
+        file: publicUrl,
+      });
+      try {
+        await newAnimation.markModified("file");
+        await newAnimation.save();
+        res.status(201).json(newAnimation);
+      } catch (err) {
+        res.status(400).json({ message: err.message });
+      }
+    });
+
+    blobStream.end(req.file.buffer);
+
+  } else {
+    res.status(400).json("invalid wordID")
+  }
+};
+
+const updateValidateLog_get = (req, res) => {
+  res.render('animation')
 }
 
-// Updata Validate log to Selected Animation (when user validate)
+// Validate Animation
 const updateValidateLog = async (req, res) => {
-    const { animationID } = req.params
-    const { userID } = req.body
-    const { validateStat } = req.body
-    const newValidateLog = new ValidateLog({
-        animation: animationID,
-        user: userID,
-        validateStat: validateStat
-    })
-    const verifyUserID = mongoose.Types.ObjectId.isValid(userID)
-    const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID)
+  const { animationID } = req.params;
+  const userID = res.locals.user._id
+  await upload(req, res)
+  const { validateStat } = req.body;
+  const verifyUserID = mongoose.Types.ObjectId.isValid(userID);
+  const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
 
-    if (!(verifyUserID && verifyAnimationID)) {
-        res.json("userID or animationID isn't ObjectID")
-    } else {
+  const newValidateLog = new ValidateLog({
+    animationID: animationID,
+    userID: userID,
+    validateStat: validateStat,
+  });
 
-        try {
-            const validateLog = await newValidateLog.save()
-            if (validateLog) {
-                const count = await User.countDocuments({ _id: userID })
+  if (!(verifyUserID && verifyAnimationID)) {
+    res.status(400).json("userID or animationID isn't ObjectID");
+  } else {
+    try {
+      const validateLog = await newValidateLog.save();
+      if (validateLog) {
+        const count = await User.countDocuments({ _id: userID });
 
-                if (count > 0) {
-                    await User.findByIdAndUpdate({ _id: userID }, { $push: { validateLog: validateLog._id } })
-                    await Animation.findByIdAndUpdate({ _id: animationID }, { $set: { validateLog: validateLog._id } })
-                    res.json(validateLog)
-                } else {
-                    res.json("userID doesn't exist")
-                }
-            } else {
-                res.json("Can't add validateLog to user or animation")
-            }
-        } catch (error) {
-            res.json({ message: error.message })
+        if (count > 0) {
+          await User.findByIdAndUpdate(
+            { _id: userID },
+            { $push: { validateLog: validateLog._id } }
+          );
+          await Animation.findByIdAndUpdate(
+            { _id: animationID },
+            { $set: { validateLog: validateLog._id } }
+          );
+          res.status(200).json(validateLog);
+        } else {
+          res.status(404).json("userID doesn't exist");
         }
+      } else {
+        res.status(400).json("Can't add validateLog to user or animation");
+      }
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
-}
+  }
+};
 
 // Delete Selected Animation
 const deleteAnimation = async (req, res) => {
-    const { animationID } = req.params
-    const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID)
-    if (!verifyAnimationID) {
-        res.json("animationID isn't ObjectID")
-    } else {
-        try {
-            const deletedAnimation = await Animation.findByIdAndDelete({ _id: animationID })
-            if (deletedAnimation) {
-                res.json(`Animation "${deleteAnimation.word}" has been deleted`)
-            } else {
-                res.json("No animation deleted")
-            }
-        } catch (error) {
-            res.json({ message: error.message })
-        }
+  const { animationID } = req.params;
+  const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
+  if (!verifyAnimationID) {
+    res.status(400).json("animationID isn't ObjectID");
+  } else {
+    try {
+      const deletedAnimation = await Animation.findByIdAndDelete({
+        _id: animationID,
+      });
+      if (deletedAnimation) {
+        res.status(200).json(`Animation "${deleteAnimation.word}" has been deleted`);
+      } else {
+        res.status(200).json("No animation deleted");
+      }
+    } catch (err) {
+      res.status(400).json({ message: err.message });
     }
+  }
+};
+
+// Get All animation validate log
+const getAnimationLog = async (req, res) => {
+  const { animationID } = req.params
+  try {
+    const animationLog = await ValidateLog.find({ animationID: animationID }).select({ animationID: 0 })
+      .populate({
+        path: "userID",
+      })
+
+    res.status(200).json({ animationLog: animationLog })
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
 }
 
-module.exports = { getAnimation, createAnimation, updateValidateLog, deleteAnimation }
+module.exports = {
+  getAnimation,
+  createAnimation,
+  updateValidateLog,
+  deleteAnimation,
+  getAnimationLog,
+  getAnimationByID,
+  getAnimationByWordID,
+  updateValidateLog_get
+};
