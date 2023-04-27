@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const Word = require("../models/Word");
+const upload = require('../middleware/multer');
 
 // Get all word
 const getWord = async (req, res) => {
@@ -37,6 +38,7 @@ const getWordBySearch = async (req, res) => {
 
 // Create New Word
 const createWord = async (req, res) => {
+  await upload(req, res)
   const { word, description } = req.body;
   const newWord = new Word({ word, description });
 
@@ -49,29 +51,30 @@ const createWord = async (req, res) => {
 };
 
 // Add Animation to Word
-const addAnimation = async (req, res) => {
-  const { wordID } = req.params;
-  const { animationID } = req.body;
+// const addAnimation = async (req, res) => {
+//   const { wordID } = req.params;
+//   const { animationID } = req.body;
 
-  if (!mongoose.Types.ObjectId.isValid(wordID)) {
-    res.status(400).json("This is not objectID");
-  } else {
-    try {
-      const addedAnimation = await Word.findByIdAndUpdate(
-        { _id: wordID },
-        { $push: { animation: animationID } },
-        { new: true }
-      );
-      res.status(200).json(addedAnimation);
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  }
-};
+//   if (!mongoose.Types.ObjectId.isValid(wordID)) {
+//     res.status(400).json("This is not objectID");
+//   } else {
+//     try {
+//       const addedAnimation = await Word.findByIdAndUpdate(
+//         { _id: wordID },
+//         { $push: { animation: animationID } },
+//         { new: true }
+//       );
+//       res.status(200).json(addedAnimation);
+//     } catch (err) {
+//       res.status(400).json({ message: err.message });
+//     }
+//   }
+// };
 
 // Edit Selected Word
 const editWord = async (req, res) => {
   const { wordID } = req.params
+  await upload(req, res)
   const { word, description } = req.body
   const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
   if (!verifyWordID) {
@@ -123,7 +126,6 @@ module.exports = {
   getWordBySearch,
   getWord,
   createWord,
-  addAnimation,
   deleteWord,
   getWordByID,
   editWord
