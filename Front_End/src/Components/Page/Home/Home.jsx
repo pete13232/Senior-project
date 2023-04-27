@@ -62,7 +62,7 @@ const Home = () => {
       .post("http://localhost:3333/words/add", wordForm)
       .then((res) => {
         console.log(res);
-        if (values.animation !== undefined) {
+        if (values.animation.length > 0) {
           console.log("values.animation", values.animation);
 
           // FBXtoJSON({ file: values.animation }).then((result) => {
