@@ -4,7 +4,7 @@ import model from "./FBX_Loader.js";
 // import animation from "./BVH_Loader.js";
 import SceneInit from "./SceneInit.js";
 import * as THREE from "three";
-import axios from "axios";
+import axios from "../Utils/axiosInstance.js";
 
 const Canvas = () => {
   const fetchData = async (url) => {
@@ -21,9 +21,9 @@ const Canvas = () => {
   const clock = new THREE.Clock();
   let options = {
     position_x: 0,
-    position_y: -30,
-    position_z: 20,
-    scale: 0.23,
+    position_y: -50,
+    position_z: 0,
+    scale: 0.39,
   };
 
   function animate() {

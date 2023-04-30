@@ -6,7 +6,7 @@ const requireAuth = (req, res, next) => {
     if (!req.headers.authorization) {
         return res.status(403).json({ error: 'No credentials sent!' });
     }
-    const token = req.headers.authorization.split(' ')[1]
+    const token = req.headers.authorization?.split(' ')[1]
     console.log(token)
     // check json web token exists & if verified
     if (token) {
@@ -27,7 +27,7 @@ const requireAuth = (req, res, next) => {
 
 // check current user
 const checkUser = (req, res, next) => {
-    const token = req.headers.authorization.split(' ')[1]
+    const token = req.headers.authorization?.split(' ')[1]
 
     if (token) {
         jwt.verify(token, 'tsl project secret', async (err, decodedToken) => {
