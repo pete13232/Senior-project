@@ -59,7 +59,6 @@ const createAnimation = async (req, res) => {
   if (wordID_exist > 0) {
     await upload(req, res)
     req.file.originalname = Date.now() + '-' + req.file.originalname
-
     if (!req.file) {
       return res.status(400).send({ message: "Please upload a file!" });
     }
@@ -176,7 +175,7 @@ const deleteAnimation = async (req, res) => {
 const getAnimationLog = async (req, res) => {
   const { animationID } = req.params
   try {
-    const animationLog = await ValidateLog.find({ animationID: animationID }).select({ animationID: 0 })
+    const animationLog = await ValidateLog.find({animationID:animationID}).sort({ _id: -1 }).select({ animationID: 0 }).limit(1)
       .populate({
         path: "userID",
       })
