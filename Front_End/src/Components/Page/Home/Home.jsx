@@ -8,7 +8,6 @@ import {
   Col,
   ListGroup,
   Form,
-  Modal,
 } from "react-bootstrap";
 
 import {
@@ -19,129 +18,124 @@ import {
   FaEdit,
 } from "react-icons/fa";
 
-import useFetchData from "../../Utils/useFetchData";
-
 import "./style.css";
 
-import { Formik } from "formik";
-import * as yup from "yup";
 import axios from "axios";
-import FBXtoJSON from "../../Utils/FBXToJSON";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
+
+import AddWordModal from "../../Modal/AddWordModal";
+import EditWordModal from "../../Modal/EditWordModal";
 const Home = () => {
-  const {
-    data: wordList,
-    loading: wordListLoading,
-    success: wordListSuccess,
-  } = useFetchData({
-    url: "http://localhost:3333/words",
-  });
-  console.log(wordList);
   const { wordID, animationID } = useParams();
 
-  /*------------------------Form Handling--------------------------- */
-  const [showAddWord, setShowAddWord] = useState(false);
-  const handleClose = (setClose) => {
-    setClose(false);
-  };
-  const handleShow = (setShow) => {
-    setShow(true);
+  const fetchData = async (url) => {
+    const response = await axios.get(url);
+    return response.data;
   };
 
-  const schema = yup.object().shape({
-    word: yup.string().required(),
-    description: yup.string().required(),
-    animation: yup.mixed(),
-  });
+  const [wordList, setWordList] = useState([]);
+  const [word, setWord] = useState(undefined);
 
-  const submitAddWord = (values) => {
-    const wordForm = new FormData();
-    wordForm.append("word", values.word);
-    wordForm.append("description", values.description);
-    axios
-      .post("http://localhost:3333/words/add", wordForm)
+  const fetchWordList = () => {
+    fetchData("http://localhost:3333/words")
       .then((res) => {
-        console.log(res);
-        if (values.animation.length > 0) {
-          console.log("values.animation", values.animation);
-
-          // FBXtoJSON({ file: values.animation }).then((result) => {
-          //   const blob = new Blob([JSON.stringify(result)], {
-          //     type: "application/json",
-          //   });
-          //   const formData = new FormData();
-          //   formData.append("word", values.word);
-          //   formData.append("file", blob, values.word + "animation_clip");
-          //   const reader = new FileReader();
-          //   reader.readAsText(blob);
-          //   reader.onload = () => {
-          //     const data = JSON.parse(reader.result);
-          //     console.log(data); // logs the parsed JSON data
-          //   };
-          //   axios
-          //     .post("http://localhost:3333/animations/add", formData)
-          //     .then((res) => {
-          //       console.log(res);
-          //     })
-          //     .catch((error) => {
-          //       console.error("There was an error!", error);
-          //     });
-          // });
-        }
+        setWordList(res.data);
       })
-      .catch((error) => {
-        console.error("There was an error!", error);
+      .catch((err) => {
+        console.log(err);
       });
   };
+  const fetchWord = () => {
+    fetchData(`http://localhost:3333/words/${wordID}`)
+      .then((res) => {
+        setWord(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+  const refetch = () => {
+    fetchWordList();
+    fetchWord();
+  };
 
+  useEffect(() => {
+    fetchWordList();
+    console.log("useEffect1");
+  }, []);
+
+  useEffect(() => {
+    if (wordID !== undefined) {
+      fetchWord();
+    } else {
+      setWord(undefined);
+    }
+    console.log("useEffect2");
+  }, [wordID]);
+
+  console.log(wordList);
+
+  const [showAddWord, setShowAddWord] = useState(false);
+  const [showEditWord, setShowEditWord] = useState(false);
   return (
     <>
-      {!wordListLoading && (
-        <Container fluid className="px-5">
-          <Row className="py-2">
-            <Col>
-              <Card style={{ width: "max-content" }} className="mb-2">
-                <Card.Body>
-                  <div
-                    className="pa-4"
-                    style={{ position: "relative", borderStyle: "groove" }}
-                  >
-                    <Canvas />
-                  </div>
-                  <div className="d-flex justify-content-center align-items-center pt-3">
-                    <Button variant="primary" className="mx-2">
-                      <FaFastBackward color="white" size={16} />
-                    </Button>
-                    <Button variant="primary" className="mx-2">
-                      <FaPlay color="white" size={16} />
-                    </Button>
-                    <Button variant="primary" className="mx-2 ">
-                      <FaFastForward color="white" size={16} />
-                    </Button>
-                  </div>
-                </Card.Body>
-              </Card>
-              <Card>
-                <Card.Header
-                  as="h5"
-                  bg="primary"
-                  className="d-flex justify-content-between align-items-center maincard-header"
+      <Container fluid className="px-5">
+        <Row className="py-2">
+          <Col>
+            <Card style={{ width: "max-content" }} className="mb-2">
+              <Card.Body>
+                <div
+                  className="pa-4"
+                  style={{ position: "relative", borderStyle: "groove" }}
                 >
-                  <div className="d-flex align-items-center pt-2">Detail</div>
-                  <Button className="d-flex align-items-center">
+                  <Canvas />
+                </div>
+                <div className="d-flex justify-content-center align-items-center pt-3">
+                  <Button variant="primary" className="mx-2">
+                    <FaFastBackward color="white" size={16} />
+                  </Button>
+                  <Button variant="primary" className="mx-2">
+                    <FaPlay color="white" size={16} />
+                  </Button>
+                  <Button variant="primary" className="mx-2 ">
+                    <FaFastForward color="white" size={16} />
+                  </Button>
+                </div>
+              </Card.Body>
+            </Card>
+            <Card>
+              <Card.Header
+                as="h5"
+                bg="primary"
+                className="d-flex justify-content-between align-items-center maincard-header"
+              >
+                <div className="d-flex align-items-center card-header-text">
+                  รายละเอียด
+                </div>
+                {wordID !== undefined && (
+                  <Button
+                    className="d-flex align-items-center"
+                    onClick={() => setShowEditWord(true)}
+                  >
                     <FaEdit color="white" size={16} />
                   </Button>
-                </Card.Header>
-                <Card.Body>
-                  <Card.Title>word //wordID = {wordID}</Card.Title>
-                  <Card.Text>description</Card.Text>
+                )}
+              </Card.Header>
+              <Card.Body>
+                <Card.Title>
+                  {word !== undefined ? word.word : "ยังไม่ได้เลือกคำศัพท์"}
+                </Card.Title>
+                <Card.Text>
+                  {word !== undefined ? word.description : " - "}
+                </Card.Text>
+                {word !== undefined && (
                   <Card>
                     <Card.Header
                       as="h5"
                       className="d-flex justify-content-between align-items-center infocard-header"
                     >
                       <div className="d-flex align-items-center pt-2">
-                        Animation List
+                        แอนิเมชัน
                       </div>
                     </Card.Header>
                     <ListGroup as="ol" numbered variant="flush">
@@ -168,147 +162,78 @@ const Home = () => {
                       </ListGroup.Item>
                     </ListGroup>
                   </Card>
-                  <Form.Group controlId="formFileLg" className="mb-3">
-                    <Form.Label>Upload FBX File</Form.Label>
-                    <Form.Control type="file" size="lg" />
-                  </Form.Group>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col>
-              <Card>
-                <Card.Header
-                  as="h5"
-                  bg="primary"
-                  className="d-flex justify-content-between align-items-center maincard-header"
+                )}
+                <Form.Group controlId="formFileLg" className="mb-3">
+                  <Form.Label>Upload FBX File</Form.Label>
+                  <Form.Control type="file" size="lg" />
+                </Form.Group>
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col>
+            <Card>
+              <Card.Header
+                as="h5"
+                bg="primary"
+                className="d-flex justify-content-between align-items-center maincard-header"
+              >
+                <div className="d-flex align-items-center card-header-text">
+                  คำศัพท์
+                </div>
+                <Button
+                  className="d-flex align-items-center"
+                  onClick={() => setShowAddWord(true)}
                 >
-                  <div className="d-flex align-items-center pt-2">Words</div>
-                  <Button
+                  <FaPlus color="white" size={16} />
+                </Button>
+              </Card.Header>
+              <ListGroup as="ol" numbered variant="flush">
+                {wordList.map((word) => (
+                  <ListGroup.Item
+                    as="li"
                     className="d-flex align-items-center"
-                    onClick={() => handleShow(setShowAddWord)}
+                    key={word._id}
                   >
-                    <FaPlus color="white" size={16} />
-                  </Button>
-                </Card.Header>
-                <ListGroup as="ol" numbered variant="flush">
-                  {wordList.map((word) => (
-                    <ListGroup.Item
-                      as="li"
-                      className="d-flex align-items-center"
-                      key={word._id}
-                    >
-                      <div className="d-flex flex-fill  justify-content-between align-items-center">
-                        <div className="d-flex justify-content-between align-items-center ps-1">
-                          {word.word}
-                        </div>
-                        <div className="d-flex justify-content-between align-items-center">
-                          <Button variant="primary" className="mx-2">
-                            Play
-                          </Button>
-                          <Button variant="warning" className="mx-2">
-                            Edit
-                          </Button>
-                          <Button variant="danger" className="mx-2">
-                            Delete
-                          </Button>
-                        </div>
+                    <div className="d-flex flex-fill  justify-content-between align-items-center">
+                      <div className="d-flex justify-content-between align-items-center ps-1">
+                        {word.word}
                       </div>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              </Card>
-            </Col>
-          </Row>
+                      <div className="d-flex justify-content-between align-items-center">
+                        <Link to={`/words/${word._id}`}>
+                          <Button
+                            variant="primary"
+                            className="mx-1 button-class"
+                          >
+                            เลือก
+                          </Button>
+                        </Link>
+                        <Button variant="danger" className="mx-1 button-class">
+                          ลบ
+                        </Button>
+                      </div>
+                    </div>
+                  </ListGroup.Item>
+                ))}
+              </ListGroup>
+            </Card>
+          </Col>
+        </Row>
 
-          {/*-------------------------------- Add Word Modal------------------------------------ */}
-          <Modal show={showAddWord} onHide={() => handleClose(setShowAddWord)}>
-            <Formik
-              initialValues={{
-                word: "",
-                description: "",
-                animation: "",
-              }}
-              validationSchema={schema}
-              onSubmit={(values) => {
-                submitAddWord(values);
-              }}
-            >
-              {({
-                handleSubmit,
-                handleChange,
-                handleBlur,
-                setFieldValue,
-                values,
-                touched,
-                isValid,
-                errors,
-              }) => (
-                <Form onSubmit={handleSubmit}>
-                  <Modal.Header closeButton>
-                    <Modal.Title>Add Word</Modal.Title>
-                  </Modal.Header>
-                  <Modal.Body>
-                    <Form.Group className="mb-3" controlId="addWord">
-                      <Form.Label>Word</Form.Label>
-                      <Form.Control
-                        name="word"
-                        type="text"
-                        placeholder="Enter word"
-                        autoFocus
-                        onChange={handleChange}
-                        isInvalid={!!errors.word}
-                      />
-                    </Form.Group>
-                    <Form.Group className="mb-3" controlId="addDesc">
-                      <Form.Label>Description</Form.Label>
-                      <Form.Control
-                        name="description"
-                        as="textarea"
-                        rows={3}
-                        placeholder="Enter description"
-                        onChange={handleChange}
-                        isInvalid={!!errors.description}
-                      />
-                    </Form.Group>
-                    <Form.Group controlId="addAnimation" className="mb-3">
-                      <Form.Label>FBX Animation File</Form.Label>
-                      <Form.Control
-                        name="animation"
-                        type="file"
-                        isInvalid={!!errors.file}
-                        onChange={(event) => {
-                          setFieldValue(
-                            "animation",
-                            event.currentTarget.files[0]
-                          );
-                        }}
-                      />
-                    </Form.Group>
-                  </Modal.Body>
-                  <Modal.Footer>
-                    <Button
-                      variant="secondary"
-                      onClick={() => handleClose(setShowAddWord)}
-                    >
-                      Close
-                    </Button>
-                    <Button
-                      variant="primary"
-                      onClick={() => {
-                        isValid ? handleClose(setShowAddWord) : null;
-                      }}
-                      type="submit"
-                    >
-                      Add
-                    </Button>
-                  </Modal.Footer>
-                </Form>
-              )}
-            </Formik>
-          </Modal>
-          {/*-------------------------------- Add Word Modal------------------------------------ */}
-        </Container>
-      )}
+        {/* AddWordModal */}
+        <AddWordModal
+          showAddWord={showAddWord}
+          setShowAddWord={setShowAddWord}
+          refetch={refetch}
+        />
+        <EditWordModal
+          showEditWord={showEditWord}
+          setShowEditWord={setShowEditWord}
+          currentWordID={word !== undefined ? word._id : undefined}
+          currentWord={word !== undefined ? word.word : "ยังไม่ได้เลือกคำศัพท์"}
+          currentDesc={word !== undefined ? word.description : " - "}
+          refetch={refetch}
+        />
+      </Container>
     </>
   );
 };
