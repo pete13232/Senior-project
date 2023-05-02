@@ -34,6 +34,8 @@
     "redux": "^4.2.1",
     "sort-by": "^1.2.0",
     "stats.js": "^0.17.0",
+    "sweetalert2": "^11.7.3",
+    "sweetalert2-react-content": "^5.0.7",
     "three": "^0.149.0",
     "universal-cookie": "^4.0.4",
     "yup": "^1.0.2"

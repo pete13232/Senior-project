@@ -15,6 +15,7 @@ const FBXtoJSON = ({ file }) =>
       if (object.animations[0] !== undefined) {
         result = object.animations[0].toJSON();
       }
+      console.log("res result")
       res(result);
     });
     reader.readAsArrayBuffer(file);
