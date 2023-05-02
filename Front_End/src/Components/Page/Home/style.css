@@ -7,3 +7,18 @@
   background-color: #AEAEAE !important;
   color: white !important
 }
+
+.buttonClass {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  border: none;
+  border-radius: 999px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 56px;
+}

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
 import { Link, redirect } from "react-router-dom";
 import "./style.css";
-import axios from "../../Utils/axiosInstance";
+import axios from "axios";
 
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../redux/userReducer";
@@ -30,6 +30,7 @@ const Login = () => {
       .then((res) => {
         dispatch(setUser(res.data.newUser));
         localStorage.setItem("token", res.data.token);
+        window.dispatchEvent(new Event("storage")); // update storage after set item
         console.log("localStorage = " + localStorage.getItem("token"));
         alert("Pass new User =" + res.data);
         redirect("/");

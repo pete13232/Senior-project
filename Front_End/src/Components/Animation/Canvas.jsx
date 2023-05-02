@@ -4,13 +4,15 @@ import model from "./FBX_Loader.js";
 // import animation from "./BVH_Loader.js";
 import SceneInit from "./SceneInit.js";
 import * as THREE from "three";
-import axios from "../Utils/axiosInstance.js";
+import axios from "axios";
+import { useParams } from "react-router-dom";
 
 const Canvas = () => {
   const fetchData = async (url) => {
     const response = await axios.get(url);
     return response.data;
   };
+  const { wordID, animationID } = useParams();
 
   let mixer = undefined;
   let init = undefined;
@@ -99,30 +101,6 @@ const Canvas = () => {
           gui.add(options, "position_z", -50, 50);
           gui.add(options, "scale", 0.1, 0.5);
 
-          /*model.then((object) => {
-            animation.then((track) => {
-              init.scene.add(object);
-              let s = 0.28;
-              object.scale.set(s, s, s);
-              object.position.y = -32;
-              mixer = new THREE.AnimationMixer(object);
-              // let fbx_skeleton = new THREE.SkeletonHelper(object);
-              // fbx_skeleton.skeleton = object.children[1].skeleton;
-              // init.scene.add(fbx_skeleton);
-    
-              clips = object.animations.map((animation) => {
-                return mixer.clipAction(animation);
-              });
-              clips.push(mixer.clipAction(track));
-    
-              //selecting clips
-              // clips[0].play();
-    
-              clips[1].play();
-              // clips[2].play();
-            });
-          });*/
-
           model.then((object) => {
             init.scene.add(object);
             let s = 0.28;
@@ -136,12 +114,16 @@ const Canvas = () => {
             clips = object.animations.map((animation) => {
               return mixer.clipAction(animation);
             });
+
+            clips.splice(0, 1);
             clips.push(mixer.clipAction(clipTransform(responseClip)));
 
             //selecting clips
-            // clips[0].play();
+            if (animationID !== undefined) {
+              clips[0].play();
+            }
 
-            clips[1].play();
+            // clips[1].play();
             // clips[2].play();
           });
 

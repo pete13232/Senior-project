@@ -2,7 +2,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 
 import { Formik } from "formik";
 import * as yup from "yup";
-import axios from "../Utils/axiosInstance";
+import axios from "axios";
 import FBXtoJSON from "../Utils/FBXToJSON";
 const AddWordModal = ({ showAddWord, setShowAddWord }) => {
   /*------------------------Form Handling--------------------------- */
@@ -21,36 +21,54 @@ const AddWordModal = ({ showAddWord, setShowAddWord }) => {
     const wordForm = new FormData();
     wordForm.append("word", values.word);
     wordForm.append("description", values.description);
+    console.log(
+      "localStorage before add word = " + localStorage.getItem("token")
+    );
     axios
-      .post("http://localhost:3333/words/add", wordForm)
-      .then((res) => {
-        console.log(res);
-        if (values.animation.length > 0) {
+      .post("http://localhost:3333/words/add", wordForm, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((addWordResponse) => {
+        console.log(addWordResponse);
+        console.log("values.animation");
+        console.log(values.animation);
+        console.log(values.animation.length);
+        if (values.animation.length !== "") {
           console.log("values.animation", values.animation);
 
-          // FBXtoJSON({ file: values.animation }).then((result) => {
-          //   const blob = new Blob([JSON.stringify(result)], {
-          //     type: "application/json",
-          //   });
-          //   const formData = new FormData();
-          //   formData.append("word", valu
-          //.word);
-          //   formData.append("file", blob, values.word + "animation_clip");
-          //   const reader = new FileReader();
-          //   reader.readAsText(blob);
-          //   reader.onload = () => {
-          //     const data = JSON.parse(reader.result);
-          //     console.log(data); // logs the parsed JSON data
-          //   };
-          //   axios
-          //     .post("http://localhost:3333/animations/add", formData)
-          //     .then((res) => {
-          //       console.log(res);
-          //     })
-          //     .catch((error) => {
-          //       console.error("There was an error!", error);
-          //     });
-          // });
+          FBXtoJSON({ file: values.animation }).then((result) => {
+            const blob = new Blob([JSON.stringify(result)], {
+              type: "application/json",
+            });
+            const animationForm = new FormData();
+            console.log("addWordResponse.data._id", addWordResponse.data._id);
+            animationForm.append("file", blob, values.word + "animation_clip");
+            const reader = new FileReader();
+            // reader.readAsText(blob);
+            // reader.onload = () => {
+            //   const data = JSON.parse(reader.result);
+            //   console.log("read data in blob");
+            //   console.log(data); // logs the parsed JSON data
+            // };
+            axios
+              .post(
+                `http://localhost:3333/animations/add?wordID=${addWordResponse.data._id}`,
+                animationForm,
+                {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                  },
+                }
+              )
+              .then((res) => {
+                console.log(res);
+              })
+              .catch((error) => {
+                console.error("There was an error!", error);
+              });
+          });
         }
       })
       .catch((error) => {
