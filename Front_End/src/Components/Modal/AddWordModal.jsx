@@ -4,7 +4,7 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
 import FBXtoJSON from "../Utils/FBXToJSON";
-const AddWordModal = ({ showAddWord, setShowAddWord }) => {
+const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
   /*------------------------Form Handling--------------------------- */
 
   const schema = yup.object().shape({
@@ -31,11 +31,12 @@ const AddWordModal = ({ showAddWord, setShowAddWord }) => {
         },
       })
       .then((addWordResponse) => {
+        refetch();
         console.log(addWordResponse);
         console.log("values.animation");
         console.log(values.animation);
         console.log(values.animation.length);
-        if (values.animation.length !== "") {
+        if (values.animation instanceof File) {
           console.log("values.animation", values.animation);
 
           FBXtoJSON({ file: values.animation }).then((result) => {
@@ -45,7 +46,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord }) => {
             const animationForm = new FormData();
             console.log("addWordResponse.data._id", addWordResponse.data._id);
             animationForm.append("file", blob, values.word + "animation_clip");
-            const reader = new FileReader();
+            // const reader = new FileReader();
             // reader.readAsText(blob);
             // reader.onload = () => {
             //   const data = JSON.parse(reader.result);

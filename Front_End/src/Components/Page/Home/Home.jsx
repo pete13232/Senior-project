@@ -8,7 +8,6 @@ import {
   Col,
   ListGroup,
   Form,
-  Modal,
 } from "react-bootstrap";
 
 import {
@@ -21,15 +20,14 @@ import {
 
 import "./style.css";
 
-import { Formik } from "formik";
-import * as yup from "yup";
 import axios from "axios";
-import FBXtoJSON from "../../Utils/FBXToJSON";
 import { useParams, Link } from "react-router-dom";
 
 import AddWordModal from "../../Modal/AddWordModal";
+import EditWordModal from "../../Modal/EditWordModal";
 const Home = () => {
   const { wordID, animationID } = useParams();
+
   const fetchData = async (url) => {
     const response = await axios.get(url);
     return response.data;
@@ -37,7 +35,8 @@ const Home = () => {
 
   const [wordList, setWordList] = useState([]);
   const [word, setWord] = useState(undefined);
-  useEffect(() => {
+
+  const fetchWordList = () => {
     fetchData("http://localhost:3333/words")
       .then((res) => {
         setWordList(res.data);
@@ -45,40 +44,39 @@ const Home = () => {
       .catch((err) => {
         console.log(err);
       });
+  };
+  const fetchWord = () => {
+    fetchData(`http://localhost:3333/words/${wordID}`)
+      .then((res) => {
+        setWord(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+  const refetch = () => {
+    fetchWordList();
+    fetchWord();
+  };
+
+  useEffect(() => {
+    fetchWordList();
     console.log("useEffect1");
   }, []);
+
   useEffect(() => {
     if (wordID !== undefined) {
-      fetchData(`http://localhost:3333/words/${wordID}`)
-        .then((res) => {
-          setWord(res.data);
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+      fetchWord();
     } else {
       setWord(undefined);
     }
     console.log("useEffect2");
   }, [wordID]);
 
-  // const {
-  //   data: wordList,
-  //   loading: wordListLoading,
-  //   success: wordListSuccess,
-  // } = useFetchData({
-  //   url: "http://localhost:3333/words",
-  // });
-
-  // const { data: word } =
-  //   wordID !== undefined
-  //     ? useFetchData({
-  //         url: `http://localhost:3333/words/${wordID}`,
-  //       })
-  //     : undefined;
   console.log(wordList);
 
   const [showAddWord, setShowAddWord] = useState(false);
+  const [showEditWord, setShowEditWord] = useState(false);
   return (
     <>
       <Container fluid className="px-5">
@@ -111,10 +109,17 @@ const Home = () => {
                 bg="primary"
                 className="d-flex justify-content-between align-items-center maincard-header"
               >
-                <div className="d-flex align-items-center">รายละเอียด</div>
-                <Button className="d-flex align-items-center">
-                  <FaEdit color="white" size={16} />
-                </Button>
+                <div className="d-flex align-items-center card-header-text">
+                  รายละเอียด
+                </div>
+                {wordID !== undefined && (
+                  <Button
+                    className="d-flex align-items-center"
+                    onClick={() => setShowEditWord(true)}
+                  >
+                    <FaEdit color="white" size={16} />
+                  </Button>
+                )}
               </Card.Header>
               <Card.Body>
                 <Card.Title>
@@ -172,7 +177,9 @@ const Home = () => {
                 bg="primary"
                 className="d-flex justify-content-between align-items-center maincard-header"
               >
-                <div className="d-flex align-items-center">คำศัพท์</div>
+                <div className="d-flex align-items-center card-header-text">
+                  คำศัพท์
+                </div>
                 <Button
                   className="d-flex align-items-center"
                   onClick={() => setShowAddWord(true)}
@@ -195,16 +202,12 @@ const Home = () => {
                         <Link to={`/words/${word._id}`}>
                           <Button
                             variant="primary"
-                            className="mx-1 buttonClass"
+                            className="mx-1 button-class"
                           >
                             เลือก
                           </Button>
                         </Link>
-                        <Button
-                          variant="danger"
-                          className="mx-1 buttonClass"
-                          style={{}}
-                        >
+                        <Button variant="danger" className="mx-1 button-class">
                           ลบ
                         </Button>
                       </div>
@@ -220,6 +223,15 @@ const Home = () => {
         <AddWordModal
           showAddWord={showAddWord}
           setShowAddWord={setShowAddWord}
+          refetch={refetch}
+        />
+        <EditWordModal
+          showEditWord={showEditWord}
+          setShowEditWord={setShowEditWord}
+          currentWordID={word !== undefined ? word._id : undefined}
+          currentWord={word !== undefined ? word.word : "ยังไม่ได้เลือกคำศัพท์"}
+          currentDesc={word !== undefined ? word.description : " - "}
+          refetch={refetch}
         />
       </Container>
     </>
