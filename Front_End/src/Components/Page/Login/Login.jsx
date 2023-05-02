@@ -7,16 +7,12 @@ import axios from "axios";
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../redux/userReducer";
 
-import Cookies from "universal-cookie";
-import jwt from "jwt-decode";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
   const userObject = useSelector((state) => state.user.userObject);
   const dispatch = useDispatch();
-
-  const cookies = new Cookies();
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(`username: ${username}, password: ${password}`);
@@ -33,14 +29,9 @@ const Login = () => {
       )
       .then((res) => {
         dispatch(setUser(res.data.newUser));
-        const decoded = jwt(res.data.token);
-
-        cookies.set("jwt", res.data.token, {
-          expires: new Date(decoded.exp * 1000),
-        });
-
-        console.log(decoded);
-        console.log(res.data);
+        localStorage.setItem("token", res.data.token);
+        window.dispatchEvent(new Event("storage")); // update storage after set item
+        console.log("localStorage = " + localStorage.getItem("token"));
         alert("Pass new User =" + res.data);
         redirect("/");
       })
