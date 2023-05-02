@@ -175,7 +175,7 @@ const deleteAnimation = async (req, res) => {
 const getAnimationLog = async (req, res) => {
   const { animationID } = req.params
   try {
-    const animationLog = await ValidateLog.find({ animationID: animationID }).select({ animationID: 0 })
+    const animationLog = await ValidateLog.find({animationID:animationID}).sort({ _id: -1 }).select({ animationID: 0 }).limit(1)
       .populate({
         path: "userID",
       })
