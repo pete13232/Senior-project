@@ -1,14 +1,17 @@
 const { default: mongoose } = require("mongoose");
-const Animation = require("../models/Animation");
-const User = require("../models/User");
-const ValidateLog = require("../models/ValidateLog");
-const Word = require("../models/Word");
 const upload = require("../middleware/multer")
+const fs = require('fs')
+const path = require('path')
 const { format } = require("util");
 const { Storage } = require("@google-cloud/storage");
 // Instantiate a storage client with credentials
 const storage = new Storage({ keyFilename: "google-cloud-key.json" });
 const bucket = storage.bucket("pete-bucket-1068");
+//
+const Animation = require("../models/Animation");
+const User = require("../models/User");
+const ValidateLog = require("../models/ValidateLog");
+const Word = require("../models/Word");
 
 // Get All Animation
 const getAnimation = async (req, res) => {
@@ -50,14 +53,14 @@ const getAnimationByID = async (req, res) => {
 }
 
 
-// Create New Animation
-const createAnimation = async (req, res) => {
+// Create New Animation (.json)
+const uploadCloudAnimation = async (req, res) => {
   const { wordID } = req.query
   // const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
   const wordID_exist = await Word.countDocuments({ _id: wordID })
 
   if (wordID_exist > 0) {
-    await upload(req, res)
+    await upload.uploadCloudMiddleware(req, res)
     req.file.originalname = Date.now() + '-' + req.file.originalname
     if (!req.file) {
       return res.status(400).send({ message: "Please upload a file!" });
@@ -100,6 +103,69 @@ const createAnimation = async (req, res) => {
   }
 };
 
+// Create New Animation (.fbx)
+const uploadLocalAnimation = async (req, res) => {
+  const { wordID } = req.query
+  await upload.uploadLocalMiddleware(req, res)
+  const newAnimation = new Animation({
+    wordID: wordID,
+    file: "http://localhost:3333/file/" + req.file.filename
+  })
+  try {
+    await newAnimation.save()
+    res.status(201).json(newAnimation)
+  }
+  catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+};
+
+// Remove temp file (.fbx)
+const unlinkTempFile = async (req, res) => {
+  await upload.uploadLocalMiddleware(req, res)
+  const { filename } = req.body
+  try {
+    fs.unlink("Uploaded/" + filename, (err => {
+      if (err) res.status(400).json({ message: err.message })
+      else res.status(200).json(`File ${filename} on local storage has successfully deleted`)
+    }))
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
+
+}
+
+// Update file path (after convert .fbx to .json)
+const editAnimation = async (req, res) => {
+  const { animationID } = req.params
+  await upload.uploadLocalMiddleware(req, res)
+  const { fileURL } = req.body
+  const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
+  if (!verifyAnimationID) {
+    res.status(400).json("animationID isn't ObjectID");
+  } else {
+    try {
+      const updatedAnimation = await Animation.findByIdAndUpdate(
+        { _id: animationID },
+        {
+          $set: {
+            file: fileURL
+          }
+        },
+        { new: true }
+      );
+      if (updatedAnimation) {
+        res.status(200).json(updatedAnimation);
+      } else {
+        res.status(200).json("No file path edit (.fbx to .json cloud file path)");
+      }
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  }
+}
+
+//
 const updateValidateLog_get = (req, res) => {
   res.render('animation')
 }
@@ -175,7 +241,7 @@ const deleteAnimation = async (req, res) => {
 const getAnimationLog = async (req, res) => {
   const { animationID } = req.params
   try {
-    const animationLog = await ValidateLog.find({animationID:animationID}).sort({ _id: -1 }).select({ animationID: 0 }).limit(1)
+    const animationLog = await ValidateLog.find({ animationID: animationID }).sort({ _id: -1 }).select({ animationID: 0 }).limit(1)
       .populate({
         path: "userID",
       })
@@ -188,11 +254,14 @@ const getAnimationLog = async (req, res) => {
 
 module.exports = {
   getAnimation,
-  createAnimation,
+  uploadCloudAnimation,
+  uploadLocalAnimation,
   updateValidateLog,
   deleteAnimation,
   getAnimationLog,
   getAnimationByID,
   getAnimationByWordID,
-  updateValidateLog_get
+  updateValidateLog_get,
+  unlinkTempFile,
+  editAnimation
 };
