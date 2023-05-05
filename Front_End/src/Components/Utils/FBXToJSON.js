@@ -11,11 +11,13 @@ const FBXtoJSON = ({ file }) =>
       let result = undefined;
       const loader = new FBXLoader();
       object = loader.parse(fileAsArrayBuffer);
-
+      console.log("object");
+      console.log(object);
       if (object.animations[0] !== undefined) {
         result = object.animations[0].toJSON();
       }
-      console.log("res result")
+      console.log("res result");
+      console.log(result);
       res(result);
     });
     reader.readAsArrayBuffer(file);

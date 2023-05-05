@@ -25,7 +25,13 @@ import { useParams, Link } from "react-router-dom";
 
 import AddWordModal from "../../Modal/AddWordModal";
 import EditWordModal from "../../Modal/EditWordModal";
+
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
 const Home = () => {
+  const MySwal = withReactContent(Swal);
+
   const { wordID, animationID } = useParams();
 
   const fetchData = async (url) => {
@@ -34,7 +40,8 @@ const Home = () => {
   };
 
   const [wordList, setWordList] = useState([]);
-  const [word, setWord] = useState(undefined);
+  const [word, setWord] = useState(null);
+  const [animationList, setAnimationList] = useState([]);
 
   const fetchWordList = () => {
     fetchData("http://localhost:3333/words")
@@ -54,29 +61,136 @@ const Home = () => {
         console.log(err);
       });
   };
+
+  const fetchAnimationList = () => {
+    fetchData(`http://localhost:3333/animations/get?wordID=${wordID}`)
+      .then((res) => {
+        setAnimationList(res.data);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
   const refetch = () => {
     fetchWordList();
-    fetchWord();
+    if (wordID !== undefined) {
+      fetchWord();
+      fetchAnimationList();
+    }
   };
 
   useEffect(() => {
     fetchWordList();
-    console.log("useEffect1");
   }, []);
 
   useEffect(() => {
     if (wordID !== undefined) {
       fetchWord();
+      fetchAnimationList();
     } else {
-      setWord(undefined);
+      setWord(null);
+      setAnimationList([]);
     }
-    console.log("useEffect2");
   }, [wordID]);
-
-  console.log(wordList);
 
   const [showAddWord, setShowAddWord] = useState(false);
   const [showEditWord, setShowEditWord] = useState(false);
+
+  const deleteWordAlert = (word) => {
+    MySwal.fire({
+      // Delete Word confirmation
+      position: "center",
+      title: `ต้องการจะลบคำว่า\n"${word.word}"\nหรือไม่ ?`,
+      text: "การกระทำนี้ไม่สามารถย้อนกลับได้",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+    }).then((result) => {
+      // confirm delete
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://localhost:3333/words/delete/${word._id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then(() => {
+            // delete success
+            MySwal.fire({
+              position: "center",
+              title: "ลบสำเร็จ!",
+              text: `คำว่า\n"${word.word}"\nถูกลบเรียบร้อย`,
+              icon: "success",
+            });
+            refetch(); // refetch changed data
+          })
+          .catch((error) => {
+            console.log(error);
+            //delete fail
+            const err = error.message;
+            MySwal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              html: err,
+              icon: "error",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+            });
+          });
+      }
+    });
+  };
+
+  const deleteAnimationAlert = (animation, index) => {
+    MySwal.fire({
+      // Delete Word confirmation
+      position: "center",
+      title: `ต้องการจะลบแอนิเมชัน\n"รูปแบบที่${index + 1}"\nหรือไม่ ?`,
+      text: "การกระทำนี้ไม่สามารถย้อนกลับได้",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "ลบ",
+      cancelButtonText: "ยกเลิก",
+    }).then((result) => {
+      // confirm delete
+      if (result.isConfirmed) {
+        axios
+          .delete(`http://localhost:3333/animations/delete/${animation._id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then(() => {
+            // delete success
+            MySwal.fire({
+              position: "center",
+              title: "ลบสำเร็จ!",
+              text: `"รูปแบบที่${index + 1}"\nถูกลบเรียบร้อย`,
+              icon: "success",
+            });
+            refetch(); // refetch changed data
+          })
+          .catch((error) => {
+            console.log(error);
+            //delete fail
+            const err = error.message;
+            MySwal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              html: err,
+              icon: "error",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+            });
+          });
+      }
+    });
+  };
   return (
     <>
       <Container fluid className="px-5">
@@ -112,7 +226,7 @@ const Home = () => {
                 <div className="d-flex align-items-center card-header-text">
                   รายละเอียด
                 </div>
-                {wordID !== undefined && (
+                {word !== null && (
                   <Button
                     className="d-flex align-items-center"
                     onClick={() => setShowEditWord(true)}
@@ -123,12 +237,12 @@ const Home = () => {
               </Card.Header>
               <Card.Body>
                 <Card.Title>
-                  {word !== undefined ? word.word : "ยังไม่ได้เลือกคำศัพท์"}
+                  {word !== null ? word.word : "ยังไม่ได้เลือกคำศัพท์"}
                 </Card.Title>
                 <Card.Text>
-                  {word !== undefined ? word.description : " - "}
+                  {word !== null ? word.description : " - "}
                 </Card.Text>
-                {word !== undefined && (
+                {word !== null && (
                   <Card>
                     <Card.Header
                       as="h5"
@@ -138,29 +252,58 @@ const Home = () => {
                         แอนิเมชัน
                       </div>
                     </Card.Header>
-                    <ListGroup as="ol" numbered variant="flush">
-                      <ListGroup.Item
-                        as="li"
-                        className="d-flex align-items-center"
-                      >
-                        <div className="d-flex flex-fill  justify-content-between align-items-center">
-                          <div className="d-flex justify-content-between align-items-center ps-1">
-                            Pattern 1 // animationID = {animationID}
+
+                    {animationList.length !== 0 ? (
+                      <ListGroup as="ol" variant="flush">
+                        {animationList.map((animation, index) => (
+                          <ListGroup.Item
+                            as="ul"
+                            className="d-flex align-items-center"
+                            key={index}
+                          >
+                            <div className="d-flex flex-fill  justify-content-between align-items-center">
+                              <div className="d-flex justify-content-between align-items-center ps-1">
+                                รูปแบบที่ {index + 1}
+                              </div>
+                              <div className="d-flex justify-content-between align-items-center">
+                                <Link
+                                  to={`/words/${wordID}/animations/${animation._id}`}
+                                >
+                                  <Button
+                                    variant="primary"
+                                    className="mx-2 button-class"
+                                  >
+                                    แสดง
+                                  </Button>
+                                </Link>
+                                <Button
+                                  variant="danger"
+                                  className="mx-2 button-class"
+                                  onClick={() =>
+                                    deleteAnimationAlert(animation, index)
+                                  }
+                                >
+                                  ลบ
+                                </Button>
+                              </div>
+                            </div>
+                          </ListGroup.Item>
+                        ))}
+                      </ListGroup>
+                    ) : (
+                      <ListGroup as="ol" variant="flush">
+                        <ListGroup.Item
+                          as="ul"
+                          className="d-flex align-items-center"
+                        >
+                          <div className="d-flex flex-fill  justify-content-between align-items-center">
+                            <div className="d-flex justify-content-between align-items-center ps-1 card-item-text">
+                              ยังไม่มีแอนิเมชัน
+                            </div>
                           </div>
-                          <div className="d-flex justify-content-between align-items-center">
-                            <Button variant="primary" className="mx-2">
-                              Play
-                            </Button>
-                            <Button variant="warning" className="mx-2">
-                              Edit
-                            </Button>
-                            <Button variant="danger" className="mx-2">
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      </ListGroup.Item>
-                    </ListGroup>
+                        </ListGroup.Item>
+                      </ListGroup>
+                    )}
                   </Card>
                 )}
                 <Form.Group controlId="formFileLg" className="mb-3">
@@ -207,7 +350,11 @@ const Home = () => {
                             เลือก
                           </Button>
                         </Link>
-                        <Button variant="danger" className="mx-1 button-class">
+                        <Button
+                          variant="danger"
+                          className="mx-1 button-class"
+                          onClick={() => deleteWordAlert(word)}
+                        >
                           ลบ
                         </Button>
                       </div>
@@ -228,9 +375,9 @@ const Home = () => {
         <EditWordModal
           showEditWord={showEditWord}
           setShowEditWord={setShowEditWord}
-          currentWordID={word !== undefined ? word._id : undefined}
-          currentWord={word !== undefined ? word.word : "ยังไม่ได้เลือกคำศัพท์"}
-          currentDesc={word !== undefined ? word.description : " - "}
+          currentWordID={word !== null ? word._id : undefined}
+          currentWord={word !== null ? word.word : "ยังไม่ได้เลือกคำศัพท์"}
+          currentDesc={word !== null ? word.description : " - "}
           refetch={refetch}
         />
       </Container>
