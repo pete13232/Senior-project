@@ -1,8 +1,9 @@
 const express = require('express')
 const router = express.Router()
 
-const { getAnimation, uploadCloudAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID, updateValidateLog_get, uploadLocalAnimation, unlinkTempFile, editAnimation } = require('../controllers/animations')
+const { getAnimation, uploadCloudAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID, updateValidateLog_get, uploadLocalAnimation, deleteLocalOriginalFile, editAnimation, deleteLocalCompressFile } = require('../controllers/animations')
 const { requireAuth, checkPermission } = require('../middleware/authMiddleware')
+const { route } = require('./users')
 
 
 // Get All Animation
@@ -13,13 +14,17 @@ router.route("/animations")
 router.route("/animations/add")
     .post(uploadCloudAnimation)
 
-// Create Animation to Local (fbx)
+// Create New Animation to local (.fbx)
 router.route("/animations/add/local")
     .post(uploadLocalAnimation)
 
-// Remove temp file (.fbx)
+// Delete local original file (.fbx)
 router.route("/animations/delete/local")
-    .delete(unlinkTempFile)
+    .delete(deleteLocalOriginalFile)
+
+// Delete local compressed file (.fbx)
+router.route("/animations/delete/local/compressed")
+    .delete(deleteLocalCompressFile)
 
 
 // Find animation By wordID
@@ -42,7 +47,6 @@ router.route("/animations/delete/:animationID")
 // Find animation By ID
 router.route("/animations/:animationID")
     .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByID)
-    .patch([requireAuth, checkPermission(['admin', 'specialist'])], editAnimation)
 
 
 module.exports = router

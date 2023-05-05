@@ -31,6 +31,7 @@ app.use(
   })
 );
 app.use("/file", express.static(path.join(__dirname, "/Uploaded/")));
+app.use("/file/compress", express.static(path.join(__dirname, "/Compressed/")));
 
 
 mongoose.set("strictQuery", true);
