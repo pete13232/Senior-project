@@ -40,6 +40,30 @@ const createToken = (id) => {
   });
 };
 
+// const signup_post = async (req, res) => {
+//   const { username, password, firstName, lastName, role } = req.body;
+
+//   try {
+//     const newUser = await User.create({
+//       username,
+//       password,
+//       firstName,
+//       lastName,
+//       role,
+//     });
+//     const token = createToken(newUser._id);
+//     // res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge * 1000 });
+//     // res.status(201).json({ newUser: newUser });
+//     res.status(200).json({
+//       token: token,
+//       newUser: newUser
+//     })
+//   } catch (err) {
+//     const errors = handleErrors(err);
+//     res.status(400).json({ errors });
+//   }
+// };
+
 const signup_post = async (req, res) => {
   const { username, password, firstName, lastName, role } = req.body;
 
@@ -51,12 +75,8 @@ const signup_post = async (req, res) => {
       lastName,
       role,
     });
-    const token = createToken(newUser._id);
-    // res.cookie("jwt", token, { httpOnly: true, maxAge: maxAge * 1000 });
-    // res.status(201).json({ newUser: newUser });
     res.status(200).json({
-      token: token,
-      newUser: newUser
+      newUser: newUser._id
     })
   } catch (err) {
     const errors = handleErrors(err);
