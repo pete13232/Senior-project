@@ -40,7 +40,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
         if (values.animation instanceof File) {
           FBXtoJSON({ file: values.animation }).then((result) => {
             if (result !== undefined) {
-              const blob = new Blob([JSON.stringify(result)], {
+              const blob = new Blob([result], {
                 type: "application/json",
               });
               const animationForm = new FormData();
@@ -81,7 +81,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                       MySwal.fire({
                         position: "center",
                         title: "เกิดข้อผิดพลาดในการอัปโหลดแอนิเมชัน",
-                        html: err,
+                        html: error,
                         icon: "error",
                         allowOutsideClick: false,
                         allowEscapeKey: false,
@@ -115,7 +115,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
         MySwal.fire({
           position: "center",
           title: "เกิดข้อผิดพลาดในการเพิ่มคำ",
-          html: err,
+          html: error,
           icon: "error",
           allowOutsideClick: false,
           allowEscapeKey: false,

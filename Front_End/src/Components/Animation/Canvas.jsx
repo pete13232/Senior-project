@@ -7,7 +7,7 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-
+import pako from "pako";
 const Canvas = () => {
   const fetchData = async (url) => {
     const response = await axios.get(url);
@@ -155,6 +155,10 @@ const Canvas = () => {
             return fetchData(resAnimation.data.file);
           })
           .then((responseClip) => {
+            const decompressedClip = pako.inflate(responseClip, {
+              to: "string",
+            });
+            console.log(decompressedClip);
             console.log("fetch JSON success");
             temp2_mixer = mixer;
             temp2_clips = clips;
@@ -164,7 +168,7 @@ const Canvas = () => {
             console.log(clips);
             const t0 = performance.now();
             temp2_clips.push(
-              temp2_mixer.clipAction(clipTransform(responseClip))
+              temp2_mixer.clipAction(clipTransform(decompressedClip))
             );
             // clips.push(mixer.clipAction(clipTransform(responseClip)));
 
