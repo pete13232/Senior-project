@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const { getAnimation, uploadCloudAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID, updateValidateLog_get, uploadLocalAnimation, deleteLocalOriginalFile, editAnimation, deleteLocalCompressFile } = require('../controllers/animations')
+const { getAnimation, uploadCloudAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID, updateValidateLog_get, uploadLocalAnimation, deleteLocalOriginalFile, editAnimation, deleteLocalCompressFile, compressJsonAnimation } = require('../controllers/animations')
 const { requireAuth, checkPermission } = require('../middleware/authMiddleware')
 const { route } = require('./users')
 
@@ -25,6 +25,10 @@ router.route("/animations/delete/local")
 // Delete local compressed file (.fbx)
 router.route("/animations/delete/local/compressed")
     .delete(deleteLocalCompressFile)
+
+// Dowload original .json from GCS
+router.route("/animations/compress/GCS")
+    .get(compressJsonAnimation)
 
 
 // Find animation By wordID
