@@ -4,8 +4,14 @@ import { Formik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
 import FBXtoJSON from "../Utils/FBXToJSON";
+
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
 const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
   /*------------------------Form Handling--------------------------- */
+
+  const MySwal = withReactContent(Swal);
 
   const schema = yup.object().shape({
     word: yup.string().required(),
@@ -31,55 +37,96 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
         },
       })
       .then((addWordResponse) => {
-        refetch();
-        console.log(addWordResponse);
-        console.log("values.animation");
-        console.log(values.animation);
-        console.log(values.animation.length);
         if (values.animation instanceof File) {
-          console.log("values.animation", values.animation);
-
           FBXtoJSON({ file: values.animation }).then((result) => {
-            const blob = new Blob([JSON.stringify(result)], {
-              type: "application/json",
-            });
-            const animationForm = new FormData();
-            console.log("addWordResponse.data._id", addWordResponse.data._id);
-            animationForm.append("file", blob, values.word + "animation_clip");
-            // const reader = new FileReader();
-            // reader.readAsText(blob);
-            // reader.onload = () => {
-            //   const data = JSON.parse(reader.result);
-            //   console.log("read data in blob");
-            //   console.log(data); // logs the parsed JSON data
-            // };
-            axios
-              .post(
-                `http://localhost:3333/animations/add?wordID=${addWordResponse.data._id}`,
-                animationForm,
-                {
-                  headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                  },
-                }
-              )
-              .then((res) => {
-                console.log(res);
-              })
-              .catch((error) => {
-                console.error("There was an error!", error);
+            if (result !== undefined) {
+              const blob = new Blob([JSON.stringify(result)], {
+                type: "application/json",
               });
+              const animationForm = new FormData();
+              animationForm.append(
+                "file",
+                blob,
+                addWordResponse.data._id + "animation_clip"
+              );
+              MySwal.fire({
+                title: "รอสักครู่",
+                text: `กำลังอัปโหลดแอนิเมชัน`,
+                allowOutsideClick: false,
+                didOpen: () => {
+                  MySwal.showLoading();
+                  axios
+                    .post(
+                      `http://localhost:3333/animations/add?wordID=${addWordResponse.data._id}`,
+                      animationForm,
+                      {
+                        headers: {
+                          Authorization: `Bearer ${localStorage.getItem(
+                            "token"
+                          )}`,
+                        },
+                      }
+                    )
+                    .then((res) => {
+                      MySwal.fire({
+                        position: "center",
+                        title: "เพิ่มคำสำเร็จ!",
+                        text: `คำว่า\n"${addWordResponse.data.word}"\nถูกเพิ่มเรียบร้อย`,
+                        icon: "success",
+                      });
+                      refetch(); // refetch changed data
+                      console.log(res);
+                    })
+                    .catch((error) => {
+                      MySwal.fire({
+                        position: "center",
+                        title: "เกิดข้อผิดพลาดในการอัปโหลดแอนิเมชัน",
+                        html: err,
+                        icon: "error",
+                        allowOutsideClick: false,
+                        allowEscapeKey: false,
+                      });
+                      refetch(); // refetch changed data
+                      console.error("There was an error!", error);
+                    });
+                },
+              });
+            } else {
+              MySwal.fire({
+                position: "center",
+                title: "เพิ่มคำสำเร็จ!",
+                text: `คำว่า\n"${addWordResponse.data.word}"\nถูกเพิ่มเรียบร้อย`,
+                icon: "success",
+              });
+              refetch(); // refetch changed data
+            }
           });
+        } else {
+          MySwal.fire({
+            position: "center",
+            title: "เพิ่มคำสำเร็จ!",
+            text: `คำว่า\n"${addWordResponse.data.word}"\nถูกเพิ่มเรียบร้อย`,
+            icon: "success",
+          });
+          refetch(); // refetch changed data
         }
       })
       .catch((error) => {
+        MySwal.fire({
+          position: "center",
+          title: "เกิดข้อผิดพลาดในการเพิ่มคำ",
+          html: err,
+          icon: "error",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
         console.error("There was an error!", error);
       });
   };
   return (
     <>
       {/*-------------------------------- Add Word Modal------------------------------------ */}
-      <Modal show={showAddWord} onHide={() => handleClose()}>
+      <Modal centered show={showAddWord} onHide={() => handleClose()}>
         <Formik
           initialValues={{
             word: "",
