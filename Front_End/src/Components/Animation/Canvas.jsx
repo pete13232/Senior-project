@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import * as dat from "dat.gui";
 import model from "./FBX_Loader.js";
-// import animation from "./BVH_Loader.js";
 import SceneInit from "./SceneInit.js";
 import * as THREE from "three";
 import axios from "axios";
 import { useParams } from "react-router-dom";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const Canvas = () => {
   const fetchData = async (url) => {
@@ -14,9 +15,19 @@ const Canvas = () => {
   };
   const { wordID, animationID } = useParams();
 
-  let mixer = undefined;
+  const MySwal = withReactContent(Swal);
+
+  // let mixer = undefined;
   let init = undefined;
-  let clips = undefined;
+  // let clips = undefined;
+
+  let temp1_mixer = undefined;
+  let temp1_clips = undefined;
+  let temp2_mixer = undefined;
+  let temp2_clips = undefined;
+  const [mixer, setMixer] = useState(undefined);
+  const [clips, setClips] = useState([]);
+
   const ref = useRef();
   const [loaded, setLoaded] = useState(false);
   const [clip, setClip] = useState(undefined);
@@ -28,10 +39,10 @@ const Canvas = () => {
     scale: 0.39,
   };
 
-  function animate() {
+  const animate = () => {
     window.requestAnimationFrame(animate);
     const delta = clock.getDelta();
-    if (mixer) mixer.update(delta);
+    if (temp1_mixer) temp1_mixer.update(delta);
     init.render();
     init.stats.update();
     init.controls.update();
@@ -45,7 +56,7 @@ const Canvas = () => {
         options.scale
       );
     }
-  }
+  };
 
   const clipTransform = (clip) => {
     const newTrack = clip.tracks.map((keyframe) => {
@@ -81,61 +92,103 @@ const Canvas = () => {
   };
 
   useEffect(() => {
-    console.log("useEffect");
-  }, []);
-  useEffect(() => {
-    fetchData("http://localhost:3333/file/1679744668168-testanimation_clip")
-      .then((responseClip) => {
-        const t0 = performance.now();
+    console.log("useEffect run");
+    console.log("loaded", loaded);
+    console.log("ref", ref);
+    if (!loaded && ref) {
+      console.log("in if");
+      init = new SceneInit(ref);
+      init.initialize();
+      animate();
+      init.animate();
 
-        if (!loaded && ref) {
-          init = new SceneInit(ref);
-          init.initialize();
-          animate();
-          init.animate();
-
-          const gui = new dat.GUI();
-
-          gui.add(options, "position_x", -20, 20);
-          gui.add(options, "position_y", -50, 50);
-          gui.add(options, "position_z", -50, 50);
-          gui.add(options, "scale", 0.1, 0.5);
-
+      // const gui = new dat.GUI();
+      // gui.add(options, "position_x", -20, 20);
+      // gui.add(options, "position_y", -50, 50);
+      // gui.add(options, "position_z", -50, 50);
+      // gui.add(options, "scale", 0.1, 0.5);
+      MySwal.fire({
+        title: "รอสักครู่",
+        text: `กำลังโหลดโมเดลตัวละคร`,
+        allowOutsideClick: false,
+        didOpen: () => {
+          console.log("swal fire");
+          MySwal.showLoading();
           model.then((object) => {
+            console.log("Loaded model");
             init.scene.add(object);
             let s = 0.28;
             object.scale.set(s, s, s);
             object.position.y = -32;
-            mixer = new THREE.AnimationMixer(object);
-            // let fbx_skeleton = new THREE.SkeletonHelper(object);
-            // fbx_skeleton.skeleton = object.children[1].skeleton;
-            // init.scene.add(fbx_skeleton);
+            temp1_mixer = new THREE.AnimationMixer(object);
+            setMixer(temp1_mixer);
 
-            clips = object.animations.map((animation) => {
-              return mixer.clipAction(animation);
+            temp1_clips = object.animations.map((animation) => {
+              return temp1_mixer.clipAction(animation);
             });
 
-            clips.splice(0, 1);
-            clips.push(mixer.clipAction(clipTransform(responseClip)));
-
-            //selecting clips
-            if (animationID !== undefined) {
-              clips[0].play();
-            }
-
-            // clips[1].play();
-            // clips[2].play();
+            temp1_clips.splice(0);
+            setClips(temp1_clips);
+            MySwal.close();
           });
-
-          setLoaded(true);
-        }
-        const t1 = performance.now();
-        console.log(`myFunction took ${t1 - t0} milliseconds.`);
-      })
-      .catch((err) => {
-        console.log(err);
+        },
       });
+
+      setLoaded(true);
+    }
   }, [ref, loaded]);
+
+  useEffect(() => {
+    if (mixer !== undefined && clips !== undefined) {
+      if (animationID !== undefined) {
+        MySwal.fire({
+          title: "รอสักครู่",
+          text: `กำลังโหลดแอนิเมชันตัวละคร`,
+          allowOutsideClick: false,
+          didOpen: () => {
+            MySwal.showLoading();
+          },
+        });
+        fetchData(`http://localhost:3333/animations/${animationID}`)
+          .then((resAnimation) => {
+            console.log("fetch for url success");
+            return fetchData(resAnimation.data.file);
+          })
+          .then((responseClip) => {
+            console.log("fetch JSON success");
+            temp2_mixer = mixer;
+            temp2_clips = clips;
+            if (temp2_clips.length > 0) {
+              temp2_clips.splice(0);
+            }
+            console.log(clips);
+            const t0 = performance.now();
+            temp2_clips.push(
+              temp2_mixer.clipAction(clipTransform(responseClip))
+            );
+            // clips.push(mixer.clipAction(clipTransform(responseClip)));
+
+            setClips(temp2_clips);
+
+            clips[0].play();
+            MySwal.close();
+            const t1 = performance.now();
+            console.log(`myFunction took ${t1 - t0} milliseconds.`);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else if (animationID === undefined) {
+        temp2_clips = clips;
+        temp2_mixer = mixer;
+        if (temp2_clips.length > 0) {
+          temp2_mixer.stopAllAction();
+          temp2_clips.splice(0);
+        }
+        setClips(temp2_clips);
+      }
+    }
+  }, [animationID, mixer, clips]);
   const div = <div ref={ref} />;
   return div;
 };

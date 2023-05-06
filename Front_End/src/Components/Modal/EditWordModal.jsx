@@ -3,6 +3,8 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { Formik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 const EditWordModal = ({
   showEditWord,
   setShowEditWord,
@@ -11,6 +13,7 @@ const EditWordModal = ({
   currentDesc,
   refetch,
 }) => {
+  const MySwal = withReactContent(Swal);
   /*------------------------Form Handling--------------------------- */
 
   const schema = yup.object().shape({
@@ -30,24 +33,40 @@ const EditWordModal = ({
     if (values.description.length > 0) {
       wordForm.append("description", values.description);
     }
-    axios
-      .patch(`http://localhost:3333/words/${currentWordID}`, wordForm, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((res) => {
-        refetch();
-        console.log(res);
-      })
-      .catch((error) => {
-        console.error("There was an error!", error);
-      });
+    if (values.word.length > 0 || values.description.length > 0) {
+      axios
+        .patch(`http://localhost:3333/words/${currentWordID}`, wordForm, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((res) => {
+          MySwal.fire({
+            position: "center",
+            title: "แก้ไขสำเร็จ!",
+            text: `คำว่า\n"${currentWord}"\nถูกแก้ไขเรียบร้อย`,
+            icon: "success",
+          });
+          refetch(); // refetch changed data
+          console.log(res);
+        })
+        .catch((error) => {
+          MySwal.fire({
+            position: "center",
+            title: "เกิดข้อผิดพลาด",
+            html: error,
+            icon: "error",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+          });
+          console.error("There was an error!", error);
+        });
+    }
   };
   return (
     <>
       {/*-------------------------------- Edit Word Modal------------------------------------ */}
-      <Modal show={showEditWord} onHide={() => handleClose()}>
+      <Modal centered show={showEditWord} onHide={() => handleClose()}>
         <Formik
           initialValues={{
             word: "",
