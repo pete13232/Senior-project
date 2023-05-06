@@ -1,18 +1,35 @@
 const express = require('express')
 const router = express.Router()
 
-const { getAnimation, createAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID, updateValidateLog_get } = require('../controllers/animations')
-const { upload } = require('../middleware/multer')
+const { getAnimation, uploadCloudAnimation, updateValidateLog, deleteAnimation, getAnimationLog, getAnimationByID, getAnimationByWordID, updateValidateLog_get, uploadLocalAnimation, deleteLocalOriginalFile, editAnimation, deleteLocalCompressFile } = require('../controllers/animations')
 const { requireAuth, checkPermission } = require('../middleware/authMiddleware')
+const { route } = require('./users')
 
 
 // Get All Animation
 router.route("/animations")
     .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimation)
 
-// Create New Animation
+// Create New Animation (json)
 router.route("/animations/add")
-    .post(createAnimation)
+    .post(uploadCloudAnimation)
+
+// Create New Animation to local (.fbx)
+router.route("/animations/add/local")
+    .post(uploadLocalAnimation)
+
+// Delete local original file (.fbx)
+router.route("/animations/delete/local")
+    .delete(deleteLocalOriginalFile)
+
+// Delete local compressed file (.fbx)
+router.route("/animations/delete/local/compressed")
+    .delete(deleteLocalCompressFile)
+
+
+// Find animation By wordID
+router.route("/animations/get")
+    .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByWordID)
 
 // Validate Animation
 router.route("/animations/validate/:animationID")
@@ -23,21 +40,13 @@ router.route("/animations/validate/:animationID")
 router.route("/animations/validateLog/:animationID")
     .get([requireAuth, checkPermission(['admin', 'specialist'])], getAnimationLog)
 
-
 // Delete Selected Animation
 router.route("/animations/delete/:animationID")
     .delete([requireAuth, checkPermission(['admin'])], deleteAnimation)
 
-
-// Find animation By wordID
-router.route("/animations/get")
-    .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByWordID)
-
-
 // Find animation By ID
 router.route("/animations/:animationID")
     .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByID)
-
 
 
 module.exports = router
