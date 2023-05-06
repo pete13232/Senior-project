@@ -55,6 +55,121 @@ const getAnimationByID = async (req, res) => {
 }
 
 
+// Compress original .json from GCS then upload back to GCS
+const compressJsonAnimation = async (req, res) => {
+  const { animationID } = req.query
+  await upload.uploadLocalMiddleware(req, res)
+  const { GCS_filename } = req.body
+  const file = bucket.file(GCS_filename)
+  const [content] = await file.download()
+  try {
+    const fileName = file.name
+    const filePath = `C:/Users/Admin/Desktop/Pete Kmutt assign/Senior_Project/Senior_Project/Back_End/Download/${fileName}`
+    fs.writeFileSync(filePath, content)
+    const compressedData = await compress_animation(filePath, fileName)
+    await upload_compressed_data(req, res, animationID, fileName, compressedData)
+    await deleteDownloadOriginalFile(req, res, fileName)
+    await removeLocalCompressFile(req, res, fileName)
+    
+  } catch (err) {
+    res.json({ message: err.message })
+  }
+}
+
+//------------------------------------Function----------------------------------------------//
+
+const upload_compressed_data = async (req, res, animationID, fileName, compressedData) => {
+  // Create a new blob in the bucket and upload the file data.
+  const blob = bucket.file(Date.now() + '-' + `${fileName}.gz`);
+  const blobStream = blob.createWriteStream({
+    resumable: false,
+  });
+
+  blobStream.on("error", (err) => {
+    res.status(500).send({ message: err.message });
+  });
+
+  blobStream.on("finish", async (data) => {
+    // Create URL for directly file access via HTTP.
+    const publicUrl = format(
+      `https://storage.googleapis.com/${bucket.name}/${blob.name}`
+    );
+    const updatedAnimation = await update_animation(req, res, animationID, publicUrl)
+    try {
+      await updatedAnimation.save()
+      res.status(201).json(updatedAnimation);
+    } catch (err) {
+      // res.status(400).json({ message: err.message });
+      console.log({ message: err.message });
+    }
+  });
+
+  blobStream.end(compressedData);
+}
+
+const compress_animation = async (filePath, fileName) => {
+  // Compressing file
+  const largeFile = fs.readFileSync(filePath)
+  const compressedData = await gzip(largeFile)
+  const compressedFileName = `${fileName}.gz`
+  const compressedFilePath = `C:/Users/Admin/Desktop/Pete Kmutt assign/Senior_Project/Senior_Project/Back_End/Compressed/${compressedFileName}`
+  fs.writeFileSync(compressedFilePath, compressedData)
+  return compressedData
+}
+
+// Update file path (after convert .fbx to .json)
+const update_animation = async (req, res, animationID, fileURL) => {
+  const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
+  if (!verifyAnimationID) {
+    res.status(400).json("animationID isn't ObjectID");
+  } else {
+    try {
+      const updatedAnimation = await Animation.findByIdAndUpdate(
+        { _id: animationID },
+        {
+          $set: {
+            file: fileURL
+          }
+        },
+        { new: true }
+      );
+      if (updatedAnimation) {
+        return updatedAnimation
+      } else {
+        // res.status(200).json("No file path edit (.fbx to .json cloud file path)");
+        console.log("No file path edit (.fbx to .json cloud file path)");
+      }
+    } catch (err) {
+      // res.status(400).json({ message: err.message });
+      console.log({ message: err.message });
+    }
+  }
+}
+
+const deleteDownloadOriginalFile = async (req, res, filename) => {
+  try {
+    fs.unlink("Download/" + filename, (err => {
+      if (err) console.log({ message: err.message })
+      else console.log(`File ${filename} on local storage has successfully deleted`)
+    }))
+  } catch (err) {
+    console.log({ message: err.message })
+  }
+}
+
+const removeLocalCompressFile = async (req, res, filename) => {
+  try {
+    fs.unlink("Compressed/" + `${filename}.gz`, (err => {
+      if (err) console.log({ message: err.message })
+      else console.log(`Compressed file ${filename} on local storage has successfully deleted`)
+    }))
+  } catch (err) {
+    console.log({ message: err.message })
+  }
+}
+
+//------------------------------------------------------------------------------------------------------------//
+
 // Create New Animation (.json)
 const uploadCloudAnimation = async (req, res) => {
   const { animationID } = req.query
@@ -216,7 +331,7 @@ const updateValidateLog_get = (req, res) => {
 const updateValidateLog = async (req, res) => {
   const { animationID } = req.params;
   const userID = res.locals.user._id
-  await upload(req, res)
+  await upload.uploadLocalMiddleware(req, res)
   const { validateStat } = req.body;
   const verifyUserID = mongoose.Types.ObjectId.isValid(userID);
   const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);
@@ -305,6 +420,7 @@ module.exports = {
   getAnimationByWordID,
   updateValidateLog_get,
   deleteLocalOriginalFile,
-  deleteLocalCompressFile
+  deleteLocalCompressFile,
+  compressJsonAnimation
   // editAnimation
 };
