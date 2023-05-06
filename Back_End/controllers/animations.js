@@ -172,11 +172,11 @@ const removeLocalCompressFile = async (req, res, filename) => {
 
 // Create New Animation (.json)
 const uploadCloudAnimation = async (req, res) => {
-  const { animationID } = req.query
+  const { wordID } = req.query
   // const verifyWordID = mongoose.Types.ObjectId.isValid(wordID);
-  const animationID_exist = await Animation.countDocuments({ _id: animationID })
+  const wordID_exist = await Word.countDocuments({ _id: wordID })
 
-  if (animationID_exist > 0) {
+  if (wordID_exist > 0) {
     // 6. Upload .json file to cloud after converted from Front-End
     await upload.uploadCloudMiddleware(req, res)
     req.file.originalname = Date.now() + '-' + req.file.originalname
@@ -202,19 +202,14 @@ const uploadCloudAnimation = async (req, res) => {
       );
 
       // 7. Updated cloud file path to db
-      const updatedAnimation = await Animation.findByIdAndUpdate(
-        { _id: animationID },
-        {
-          $set: {
-            file: publicUrl
-          }
-        },
-        { new: true }
-      );
+      const newAnimation = new Animation({
+        wordID: wordID,
+        file: publicUrl
+      })
 
       try {
-        await updatedAnimation.save()
-        res.status(201).json(updatedAnimation);
+        await newAnimation.save()
+        res.status(201).json(newAnimation);
       } catch (err) {
         res.status(400).json({ message: err.message });
       }
