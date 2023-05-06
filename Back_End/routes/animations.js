@@ -26,7 +26,7 @@ router.route("/animations/delete/local")
 router.route("/animations/delete/local/compressed")
     .delete(deleteLocalCompressFile)
 
-// Dowload original .json from GCS
+// Compresss original .json file from GCS
 router.route("/animations/compress/GCS")
     .get(compressJsonAnimation)
 

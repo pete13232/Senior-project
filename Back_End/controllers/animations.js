@@ -331,7 +331,7 @@ const updateValidateLog_get = (req, res) => {
 const updateValidateLog = async (req, res) => {
   const { animationID } = req.params;
   const userID = res.locals.user._id
-  await upload(req, res)
+  await upload.uploadLocalMiddleware(req, res)
   const { validateStat } = req.body;
   const verifyUserID = mongoose.Types.ObjectId.isValid(userID);
   const verifyAnimationID = mongoose.Types.ObjectId.isValid(animationID);

@@ -16,7 +16,7 @@ const getUser = async (req, res) => {
 
 // Create New User
 const createUser = async (req, res) => {
-    await upload(req, res)
+    await upload.uploadLocalMiddleware(req, res)
     const { username, password, firstName, lastName, role } = req.body
     const newUser = new User({username, password, firstName, lastName, role})
 
@@ -48,7 +48,7 @@ const getUserLog = async (req, res) => {
 // Edit Selected User
 const editUser = async (req, res) => {
     const { userID } = req.params
-    await upload(req, res)
+    await upload.uploadLocalMiddleware(req, res)
     const { password, firstName, lastName } = req.body
     const verifyUserID = mongoose.Types.ObjectId.isValid(userID);
     if (!verifyUserID) {
