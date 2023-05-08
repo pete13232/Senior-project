@@ -35,14 +35,14 @@ router.route("/animations/compress/GCS")
 router.route("/animations/get")
     .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationByWordID)
 
-// Validate Animation
+// Validate Animation 
 router.route("/animations/validate/:animationID")
     .post([requireAuth, checkPermission(['admin', 'specialist'])], updateValidateLog)
 
 
 // Get All animation validate log
 router.route("/animations/validateLog/:animationID")
-    .get([requireAuth, checkPermission(['admin', 'specialist'])], getAnimationLog)
+    .get(getAnimationLog)
 
 // Delete Selected Animation
 router.route("/animations/delete/:animationID")
