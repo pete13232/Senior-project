@@ -1,6 +1,12 @@
 const { default: mongoose } = require("mongoose");
-const Word = require("../models/Word");
+const path = require('path');
 const upload = require('../middleware/multer');
+const { Storage } = require("@google-cloud/storage");
+// Instantiate a storage client with credentials
+const storage = new Storage({ keyFilename: "google-cloud-key.json" });
+const bucket = storage.bucket("pete-bucket-1068");
+const Word = require("../models/Word");
+const Animation = require('../models/Animation');
 
 // Get all word
 const getWord = async (req, res) => {
@@ -109,13 +115,34 @@ const deleteWord = async (req, res) => {
   if (!verifyWordID) {
     res.status(400).send("wordID is not ObjectID");
   } else {
+    
     try {
+      const relatedAnimation = await Animation.deleteMany({ wordID: wordID })
       const deletedWord = await Word.findByIdAndDelete({ _id: wordID });
-      if (deletedWord) {
-        res.status(200).json(`Word "${deletedWord.word}" has been deleted`);
-      } else {
-        res.status(200).json("No word to delete");
+      const animations = await Animation.find({ wordID: wordID }, 'file')
+      const fileNames = animations.map(animation => {
+        const fileURL = animation.file;
+        const filename = path.basename(fileURL);
+        return filename;
+      })
+      for (const fileName of fileNames) {
+        if (fileName) {
+          const [file] = await bucket.file(fileName).get()
+          const deleteOptions = {
+            ifGenerationMatch: file.generation,
+          };
+          await bucket.file(fileName).delete(deleteOptions)
+        }
       }
+
+      if (deletedWord && relatedAnimation) {
+        res.status(200).json({ message: `Word "${deletedWord.word}" and related animation has been deleted` });
+      } else if (deletedWord) {
+        res.status(200).json({ message: `Word "${deletedWord.word}" has been deleted` });
+      } else {
+        res.status(200).json({ message: "No word to delete" });
+      }
+
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
