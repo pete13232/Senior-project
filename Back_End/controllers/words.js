@@ -1,5 +1,6 @@
 const { default: mongoose } = require("mongoose");
 const Word = require("../models/Word");
+const Animation = require('../models/Animation');
 const upload = require('../middleware/multer');
 
 // Get all word
@@ -110,8 +111,11 @@ const deleteWord = async (req, res) => {
     res.status(400).send("wordID is not ObjectID");
   } else {
     try {
+      const relatedAnimation = await Animation.deleteMany({ wordID: wordID })
       const deletedWord = await Word.findByIdAndDelete({ _id: wordID });
-      if (deletedWord) {
+      if (deletedWord && relatedAnimation) {
+        res.status(200).json(`Word "${deletedWord.word}" and related animation has been deleted`);
+      } else if (deletedWord) {
         res.status(200).json(`Word "${deletedWord.word}" has been deleted`);
       } else {
         res.status(200).json("No word to delete");
