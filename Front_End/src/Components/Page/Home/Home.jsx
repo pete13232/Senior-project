@@ -8,6 +8,8 @@ import {
   Col,
   ListGroup,
   Form,
+  OverlayTrigger,
+  Popover,
 } from "react-bootstrap";
 
 import {
@@ -18,14 +20,14 @@ import {
   FaEdit,
 } from "react-icons/fa";
 
-import "./style.css";
+import "./home-style.css";
 
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 
 import AddWordModal from "../../Modal/AddWordModal";
 import EditWordModal from "../../Modal/EditWordModal";
-
+import UploadAnimation from "../../SubComponents/UploadAnimation";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
@@ -42,6 +44,7 @@ const Home = () => {
   const [wordList, setWordList] = useState([]);
   const [word, setWord] = useState(null);
   const [animationList, setAnimationList] = useState([]);
+  const [animationLogList, setAnimationLogList] = useState([]);
 
   const fetchWordList = () => {
     fetchData("http://localhost:3333/words")
@@ -66,6 +69,16 @@ const Home = () => {
     fetchData(`http://localhost:3333/animations/get?wordID=${wordID}`)
       .then((res) => {
         setAnimationList(res.data);
+        // for (let i = 0; i < res.data.length; i++) {
+        //   fetchData(
+        //     `http://localhost:3333/animations/validateLog/${res.data[i]._id}`
+        //   ).then((logResult) => {
+        //     // temp_logList.splice(i, 0, logResult.animationLog);
+        //     setAnimationLogList((current) =>
+        //       current.splice(i, 0, logResult.animationLog)
+        //     );
+        //   });
+        // }
       })
       .catch((err) => {
         console.log(err);
@@ -104,8 +117,8 @@ const Home = () => {
       text: "การกระทำนี้ไม่สามารถย้อนกลับได้",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     }).then((result) => {
@@ -152,8 +165,8 @@ const Home = () => {
       text: "การกระทำนี้ไม่สามารถย้อนกลับได้",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     }).then((result) => {
@@ -265,6 +278,22 @@ const Home = () => {
                               <div className="d-flex justify-content-between align-items-center ps-1">
                                 รูปแบบที่ {index + 1}
                               </div>
+                              <div className="d-flex justify-content-between align-items-center ps-1">
+                                <OverlayTrigger
+                                  trigger="focus"
+                                  placement="top"
+                                  overlay={
+                                    <Popover id={`popover-positioned-top`}>
+                                      {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
+                                      <Popover.Body>Animation log</Popover.Body>
+                                    </Popover>
+                                  }
+                                >
+                                  <Button variant="secondary">
+                                    Animation status
+                                  </Button>
+                                </OverlayTrigger>
+                              </div>
                               <div className="d-flex justify-content-between align-items-center">
                                 <Link
                                   to={`/words/${wordID}/animations/${animation._id}`}
@@ -273,9 +302,15 @@ const Home = () => {
                                     variant="primary"
                                     className="mx-2 button-class"
                                   >
-                                    แสดง
+                                    เล่น
                                   </Button>
                                 </Link>
+                                <Button
+                                  variant="success"
+                                  className="mx-2 button-class"
+                                >
+                                  แสดง
+                                </Button>
                                 <Button
                                   variant="danger"
                                   className="mx-2 button-class"
@@ -289,6 +324,106 @@ const Home = () => {
                             </div>
                           </ListGroup.Item>
                         ))}
+                        <ListGroup.Item
+                          as="ul"
+                          className="d-flex align-items-center"
+                        >
+                          <div className="d-flex flex-fill  justify-content-between align-items-center">
+                            <div className="d-flex justify-content-between align-items-center ps-1">
+                              รูปแบบที่ X
+                            </div>
+                            <div className="d-flex justify-content-between align-items-center ps-1">
+                              <OverlayTrigger
+                                trigger="focus"
+                                placement="top"
+                                overlay={
+                                  <Popover id={`popover-positioned-top`}>
+                                    {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
+                                    <Popover.Body>
+                                      แก้ไขโดย Username 16:52 12/05/23
+                                    </Popover.Body>
+                                  </Popover>
+                                }
+                              >
+                                <Button variant="success">
+                                  ได้รับการตรวจสอบ
+                                </Button>
+                              </OverlayTrigger>
+                            </div>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <Link>
+                                <Button
+                                  variant="primary"
+                                  className="mx-2 button-class"
+                                >
+                                  เล่น
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="secondary"
+                                className="mx-2 button-class"
+                              >
+                                ซ่อน
+                              </Button>
+                              <Button
+                                variant="danger"
+                                className="mx-2 button-class"
+                              >
+                                ลบ
+                              </Button>
+                            </div>
+                          </div>
+                        </ListGroup.Item>
+                        <ListGroup.Item
+                          as="ul"
+                          className="d-flex align-items-center"
+                        >
+                          <div className="d-flex flex-fill  justify-content-between align-items-center">
+                            <div className="d-flex justify-content-between align-items-center ps-1">
+                              รูปแบบที่ X
+                            </div>
+                            <div className="d-flex justify-content-between align-items-center ps-1">
+                              <OverlayTrigger
+                                trigger="focus"
+                                placement="top"
+                                overlay={
+                                  <Popover id={`popover-positioned-top`}>
+                                    {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
+                                    <Popover.Body>
+                                      แก้ไขโดย Username 16:52 12/05/23
+                                    </Popover.Body>
+                                  </Popover>
+                                }
+                              >
+                                <Button variant="secondary">
+                                  ยังไม่ได้รับการตรวจสอบ
+                                </Button>
+                              </OverlayTrigger>
+                            </div>
+                            <div className="d-flex justify-content-between align-items-center">
+                              <Link>
+                                <Button
+                                  variant="primary"
+                                  className="mx-2 button-class"
+                                >
+                                  เล่น
+                                </Button>
+                              </Link>
+                              <Button
+                                variant="success"
+                                className="mx-2 button-class"
+                              >
+                                แสดง
+                              </Button>
+                              <Button
+                                variant="danger"
+                                className="mx-2 button-class"
+                              >
+                                ลบ
+                              </Button>
+                            </div>
+                          </div>
+                        </ListGroup.Item>
                       </ListGroup>
                     ) : (
                       <ListGroup as="ol" variant="flush">
@@ -306,10 +441,13 @@ const Home = () => {
                     )}
                   </Card>
                 )}
-                <Form.Group controlId="formFileLg" className="mb-3">
-                  <Form.Label>Upload FBX File</Form.Label>
-                  <Form.Control type="file" size="lg" />
-                </Form.Group>
+                {word !== null && (
+                  <UploadAnimation
+                    currentWordID={word._id}
+                    currentWord={word.word}
+                    refetch={refetch}
+                  />
+                )}
               </Card.Body>
             </Card>
           </Col>

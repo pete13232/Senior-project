@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
 import { Link, redirect } from "react-router-dom";
-import "./style.css";
+import "./login-style.css";
 import axios from "axios";
 
 import { useSelector, useDispatch } from "react-redux";
@@ -42,10 +42,10 @@ const Login = () => {
   };
 
   return (
-    <div className="background">
+    <div className="login-background">
       <Col md={4}>
         <Card>
-          <Card.Header as="h3" className="logincard-header">
+          <Card.Header as="h3" className="login-card-header">
             Login
           </Card.Header>
           <Card.Body>

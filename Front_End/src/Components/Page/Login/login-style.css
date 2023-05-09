@@ -1,9 +1,9 @@
-.logincard-header {
+.login-card-header {
   background-color: #525252 !important;
   color: white !important
 }
 
-.background {
+.login-background {
   display: flex;
   justify-content: center;
   align-items: center;

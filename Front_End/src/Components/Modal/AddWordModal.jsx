@@ -3,7 +3,7 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { Formik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
-import FBXtoJSON from "../Utils/FBXToJSON";
+import FBXtoJSON from "../Function/FBXToJSON";
 
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -38,23 +38,24 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
       })
       .then((addWordResponse) => {
         if (values.animation instanceof File) {
-          FBXtoJSON({ file: values.animation }).then((result) => {
-            if (result !== undefined) {
-              const blob = new Blob([result], {
-                type: "application/json",
-              });
-              const animationForm = new FormData();
-              animationForm.append(
-                "file",
-                blob,
-                addWordResponse.data._id + "animation_clip"
-              );
-              MySwal.fire({
-                title: "รอสักครู่",
-                text: `กำลังอัปโหลดแอนิเมชัน`,
-                allowOutsideClick: false,
-                didOpen: () => {
-                  MySwal.showLoading();
+          MySwal.fire({
+            title: "รอสักครู่",
+            text: `กำลังอัปโหลดแอนิเมชัน`,
+            allowOutsideClick: false,
+            didOpen: () => {
+              MySwal.showLoading();
+              FBXtoJSON({ file: values.animation }).then((result) => {
+                if (result !== undefined) {
+                  const blob = new Blob([result], {
+                    type: "application/json",
+                  });
+                  const animationForm = new FormData();
+                  animationForm.append(
+                    "file",
+                    blob,
+                    addWordResponse.data._id + "animation_clip.json.gz"
+                    // addWordResponse.data._id + "animation_clip.json"
+                  );
                   axios
                     .post(
                       `http://localhost:3333/animations/add?wordID=${addWordResponse.data._id}`,
@@ -89,17 +90,17 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                       refetch(); // refetch changed data
                       console.error("There was an error!", error);
                     });
-                },
+                } else {
+                  MySwal.fire({
+                    position: "center",
+                    title: "เพิ่มคำสำเร็จ!",
+                    text: `คำว่า\n"${addWordResponse.data.word}"\nถูกเพิ่มเรียบร้อย`,
+                    icon: "success",
+                  });
+                  refetch(); // refetch changed data
+                }
               });
-            } else {
-              MySwal.fire({
-                position: "center",
-                title: "เพิ่มคำสำเร็จ!",
-                text: `คำว่า\n"${addWordResponse.data.word}"\nถูกเพิ่มเรียบร้อย`,
-                icon: "success",
-              });
-              refetch(); // refetch changed data
-            }
+            },
           });
         } else {
           MySwal.fire({

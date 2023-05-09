@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
-import "./style.css";
+import "./signup-style.css";
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,7 +15,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="background"
+    <div className="signup-background"
     >
       <Col md={4}>
         <Card>
