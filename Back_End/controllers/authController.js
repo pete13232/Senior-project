@@ -34,8 +34,8 @@ const handleErrors = (err) => {
 
 // Create Token
 const maxAge = 3 * 24 * 60 * 60; // 3 days
-const createToken = (id) => {
-  return jwt.sign({ id }, "tsl project secret", {
+const createToken = (newUser) => {
+  return jwt.sign({ newUser }, "tsl project secret", {
     expiresIn: maxAge,
   });
 };
@@ -89,7 +89,7 @@ const login_post = async (req, res) => {
 
   try {
     const newUser = await User.login(username, password)
-    const token = createToken(newUser._id)
+    const token = createToken(newUser)
 
     // for front-end domain localhost:3000 
     //  // for back-end domain localhost:3333 
@@ -98,14 +98,7 @@ const login_post = async (req, res) => {
     //     maxAge: maxAge * 1000,
     // })
     res.status(200).json({
-      token: token,
-      newUser: {
-        _id: newUser._id,
-        username: newUser.username,
-        role: newUser.role,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName
-      }
+      token: token
     })
   } catch (err) {
     const errors = handleErrors(err)

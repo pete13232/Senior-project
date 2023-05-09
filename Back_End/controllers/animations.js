@@ -64,13 +64,15 @@ const compressJsonAnimation = async (req, res) => {
   const [content] = await file.download()
   try {
     const fileName = file.name
+    console.log(fileName)
     const filePath = `C:/Users/Admin/Desktop/Pete Kmutt assign/Senior_Project/Senior_Project/Back_End/Download/${fileName}`
     fs.writeFileSync(filePath, content)
-    const compressedData = await compress_animation(filePath, fileName)
-    await upload_compressed_data(req, res, animationID, fileName, compressedData)
-    await deleteDownloadOriginalFile(req, res, fileName)
-    await removeLocalCompressFile(req, res, fileName)
-    
+    const compressedData = await compress_animation(req, res, filePath, fileName)
+    // await upload_compressed_data(req, res, animationID, fileName, compressedData)
+    // res.send("Success local compressed")
+    // await deleteDownloadOriginalFile(req, res, fileName)
+    // await removeLocalCompressFile(req, res, fileName)
+
   } catch (err) {
     res.json({ message: err.message })
   }
@@ -80,7 +82,7 @@ const compressJsonAnimation = async (req, res) => {
 
 const upload_compressed_data = async (req, res, animationID, fileName, compressedData) => {
   // Create a new blob in the bucket and upload the file data.
-  const blob = bucket.file(Date.now() + '-' + `${fileName}.gz`);
+  const blob = bucket.file(Date.now() + '-' + `${fileName}`);
   const blobStream = blob.createWriteStream({
     resumable: false,
   });
@@ -107,14 +109,20 @@ const upload_compressed_data = async (req, res, animationID, fileName, compresse
   blobStream.end(compressedData);
 }
 
-const compress_animation = async (filePath, fileName) => {
+const compress_animation = async (req, res, filePath, fileName) => {
   // Compressing file
-  const largeFile = fs.readFileSync(filePath)
-  const compressedData = await gzip(largeFile)
-  const compressedFileName = `${fileName}.gz`
-  const compressedFilePath = `C:/Users/Admin/Desktop/Pete Kmutt assign/Senior_Project/Senior_Project/Back_End/Compressed/${compressedFileName}`
-  fs.writeFileSync(compressedFilePath, compressedData)
-  return compressedData
+  try {
+    const largeFile = fs.readFileSync(filePath)
+    const compressedData = await gzip(largeFile)
+    const compressedFileName = `${fileName}.gz`
+    console.log(compressedFileName)
+    const compressedFilePath = `C:/Users/Admin/Desktop/Pete Kmutt assign/Senior_Project/Senior_Project/Back_End/Compressed/${compressedFileName}`
+    fs.writeFileSync(compressedFilePath, compressedData)
+    res.send("Success comporess")
+  } catch (err) {
+    res.send(err)
+  }
+
 }
 
 // Update file path (after convert .fbx to .json)
@@ -209,6 +217,8 @@ const uploadCloudAnimation = async (req, res) => {
 
       try {
         await newAnimation.save()
+        const defaultLog = await createDefaultLog(newAnimation._id)
+        await defaultLog.save()
         res.status(201).json(newAnimation);
       } catch (err) {
         res.status(400).json({ message: err.message });
@@ -221,6 +231,15 @@ const uploadCloudAnimation = async (req, res) => {
     res.status(400).json("invalid wordID")
   }
 };
+
+// Function: Default validate log (userID: null)
+const createDefaultLog = async (animationID) => {
+  const defaultValidateLog = new ValidateLog({
+    userID: null,
+    animationID: animationID
+  })
+  return defaultValidateLog
+}
 
 // Create New Animation to local (.fbx)
 // 1. Uploading original file -> save to /Uploaded folder
@@ -367,6 +386,39 @@ const updateValidateLog = async (req, res) => {
   }
 };
 
+// Validate Animation
+// const updateValidateLog = async (req, res) => {
+//   const { animationID } = req.params;
+//   const userID = res.locals.user._id
+//   const { validateID } = req.query
+//   await upload.uploadLocalMiddleware(req, res)
+//   const { validateStat } = req.body;
+//   // Verify that the userID and animationID values are valid ObjectId values
+//   const isValidUserID = mongoose.Types.ObjectId.isValid(userID);
+//   const isValidAnimationID = mongoose.Types.ObjectId.isValid(animationID);
+
+//   if (!isValidUserID || !isValidAnimationID) {
+//     return res.status(400).json({ message: 'Invalid userID or animationID value' });
+//   }
+
+//   try {
+//     const validateLog = await ValidateLog.findByIdAndUpdate(
+//       { _id: validateID },
+//       {
+//         $set: {
+//           userID,
+//           validateStat,
+//         }
+//       },
+//       { new: true } 
+//     ).lean()
+//     res.status(200).json({validateLog: validateLog})
+//   } catch (err) {
+//     res.status(400).json({message: err.message}) 
+//   }
+
+// };
+
 // Delete Selected Animation
 const deleteAnimation = async (req, res) => {
   const { animationID } = req.params;
@@ -397,6 +449,10 @@ const getAnimationLog = async (req, res) => {
       .populate({
         path: "userID",
       })
+    console.log(animationLog)
+    if (!animationLog[0].userID) {
+      console.log("eiei")
+    }
 
     res.status(200).json({ animationLog: animationLog })
   } catch (err) {
