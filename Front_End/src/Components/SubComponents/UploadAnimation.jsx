@@ -94,8 +94,9 @@ const UploadAnimation = ({ currentWordID, currentWord, refetch }) => {
           animation: "",
         }}
         validationSchema={schema}
-        onSubmit={(values) => {
+        onSubmit={(values, { resetForm }) => {
           handleAddAnimation(values);
+          resetForm({ values: "" });
         }}
       >
         {({ handleSubmit, setFieldValue, isValid, errors }) => (

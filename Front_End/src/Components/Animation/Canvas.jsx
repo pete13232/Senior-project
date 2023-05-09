@@ -28,7 +28,9 @@ const Canvas = () => {
   const [mixer, setMixer] = useState(undefined);
   const [clips, setClips] = useState([]);
 
-  const ref = useRef();
+  const ref = useRef(null);
+  const mixerRef = useRef(null);
+
   const [loaded, setLoaded] = useState(false);
   const [clip, setClip] = useState(undefined);
   const clock = new THREE.Clock();
@@ -56,39 +58,6 @@ const Canvas = () => {
         options.scale
       );
     }
-  };
-
-  const clipTransform = (clip) => {
-    const newTrack = clip.tracks.map((keyframe) => {
-      if (keyframe.type === "vector") {
-        return new THREE.VectorKeyframeTrack(
-          keyframe.name,
-          keyframe.times,
-          keyframe.values
-        );
-      } else if (keyframe.type === "quaternion") {
-        return new THREE.QuaternionKeyframeTrack(
-          keyframe.name,
-          keyframe.times,
-          keyframe.values
-        );
-      } else if (keyframe.type === "number") {
-        return new THREE.NumberKeyframeTrack(
-          keyframe.name,
-          keyframe.times,
-          keyframe.values
-        );
-      } else {
-        return undefined;
-      }
-    });
-
-    const newClip = new THREE.AnimationClip(
-      "AnimationClip",
-      clip.duration,
-      newTrack
-    );
-    return newClip;
   };
 
   useEffect(() => {
@@ -122,6 +91,7 @@ const Canvas = () => {
             object.position.y = -32;
             temp1_mixer = new THREE.AnimationMixer(object);
             setMixer(temp1_mixer);
+            mixerRef.current = temp1_mixer;
 
             temp1_clips = object.animations.map((animation) => {
               return temp1_mixer.clipAction(animation);
@@ -136,11 +106,16 @@ const Canvas = () => {
 
       setLoaded(true);
     }
+    return () => {
+      mixerRef.current?.stopAllAction();
+    };
   }, [ref, loaded]);
 
   useEffect(() => {
     let t0 = undefined;
     let t1 = undefined;
+    console.log("animationID");
+    console.log(animationID);
     if (mixer !== undefined && clips !== undefined) {
       if (animationID !== undefined) {
         MySwal.fire({
@@ -173,6 +148,7 @@ const Canvas = () => {
                   temp2_mixer = mixer;
                   temp2_clips = clips;
                   if (temp2_clips.length > 0) {
+                    temp2_mixer.stopAllAction();
                     temp2_clips.splice(0);
                   }
 
@@ -181,10 +157,11 @@ const Canvas = () => {
                       THREE.AnimationClip.parse(JSON.parse(decompressedClip))
                     )
                   );
-
+                  console.log("temp2_clips");
+                  console.log(temp2_clips);
                   setClips(temp2_clips);
 
-                  clips[0].play();
+                  temp2_clips[0].play();
                   MySwal.close();
                   t1 = performance.now();
                   console.log(`myFunction took ${t1 - t0} milliseconds.`);

@@ -69,16 +69,16 @@ const Home = () => {
     fetchData(`http://localhost:3333/animations/get?wordID=${wordID}`)
       .then((res) => {
         setAnimationList(res.data);
-        // for (let i = 0; i < res.data.length; i++) {
-        //   fetchData(
-        //     `http://localhost:3333/animations/validateLog/${res.data[i]._id}`
-        //   ).then((logResult) => {
-        //     // temp_logList.splice(i, 0, logResult.animationLog);
-        //     setAnimationLogList((current) =>
-        //       current.splice(i, 0, logResult.animationLog)
-        //     );
-        //   });
-        // }
+        for (let i = 0; i < res.data.length; i++) {
+          fetchData(
+            `http://localhost:3333/animations/validateLog/${res.data[i]._id}`
+          ).then((logResult) => {
+            // temp_logList.splice(i, 0, logResult.animationLog);
+            setAnimationLogList((current) =>
+              current.splice(i, 0, logResult.animationLog)
+            );
+          });
+        }
       })
       .catch((err) => {
         console.log(err);
@@ -105,6 +105,11 @@ const Home = () => {
       setAnimationList([]);
     }
   }, [wordID]);
+
+  useEffect(() => {
+    console.log("animationLogList");
+    console.log(animationLogList);
+  }, [animationLogList]);
 
   const [showAddWord, setShowAddWord] = useState(false);
   const [showEditWord, setShowEditWord] = useState(false);
