@@ -7,7 +7,6 @@ const requireAuth = (req, res, next) => {
         return res.status(403).json({ error: 'No credentials sent!' });
     }
     const token = req.headers.authorization?.split(' ')[1]
-    console.log(token)
     // check json web token exists & if verified
     if (token) {
         jwt.verify(token, 'tsl project secret', (err, decodedToken) => {
@@ -27,6 +26,7 @@ const requireAuth = (req, res, next) => {
 
 // check current user
 const checkUser = (req, res, next) => {
+    // const token = req.cookies.jwt
     const token = req.headers.authorization?.split(' ')[1]
 
     if (token) {
@@ -36,10 +36,11 @@ const checkUser = (req, res, next) => {
                 res.locals.user = null
                 next()
             } else {
-                console.log(decodedToken)
-                let user = await User.findById(decodedToken.id)
+                console.log({decodeToken: decodedToken})
+                let user = await User.findById(decodedToken.user._id)
+                // console.log(user)
                 res.locals.user = user
-                console.log(res.locals.user)
+                // console.log({user: res.locals.user})
                 next()
             }
         })
