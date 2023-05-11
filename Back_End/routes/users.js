@@ -9,7 +9,7 @@ router.route("/users")
 
 // Create New User
 router.route("/users/add")
-    .post(createUser)
+    .post([requireAuth, checkPermission(['admin'])], createUser)
 
 // Delete Selected User
 router.route("/users/delete")
