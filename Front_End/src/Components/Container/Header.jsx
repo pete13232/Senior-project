@@ -36,11 +36,20 @@ const Header = () => {
           </Col>
           <Col>
             <div className="d-flex justify-content-end">
+              <Link to="/signup">
+                <Button variant="outline-light" className="mx-2">
+                  สมัครสมาชิก
+                </Button>
+              </Link>
               <Link to="/profile">
-                <Button variant="outline-light" className="mx-2">โปรไฟล์</Button>
+                <Button variant="outline-light" className="mx-2">
+                  โปรไฟล์
+                </Button>
               </Link>
               <Link to="/login">
-                <Button variant="outline-light" className="mw-2">ล็อคอิน</Button>
+                <Button variant="outline-light" className="mw-2">
+                  ล็อคอิน
+                </Button>
               </Link>
 
               {/* <FaUserCircle color="white" size={24} /> */}

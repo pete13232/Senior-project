@@ -7,15 +7,15 @@ import FBXtoJSON from "../Function/FBXToJSON";
 
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-
+import "./add-word-modal-style.css";
 const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
   /*------------------------Form Handling--------------------------- */
 
   const MySwal = withReactContent(Swal);
 
   const schema = yup.object().shape({
-    word: yup.string().required(),
-    description: yup.string().required(),
+    word: yup.string().required("กรุณากรอกคำศัพท์"),
+    description: yup.string().required("กรุณากรอกคำอธิบาย"),
     animation: yup.mixed(),
   });
   const handleClose = () => {
@@ -164,6 +164,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                     onChange={handleChange}
                     isInvalid={!!errors.word}
                   />
+                  <p className="errorMessage">{errors.word}</p>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="addDesc">
                   <Form.Label>Description</Form.Label>
@@ -175,6 +176,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                     onChange={handleChange}
                     isInvalid={!!errors.description}
                   />
+                  <p className="errorMessage">{errors.description}</p>
                 </Form.Group>
                 <Form.Group controlId="addAnimation" className="mb-3">
                   <Form.Label>FBX Animation File</Form.Label>
@@ -186,6 +188,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                       setFieldValue("animation", event.currentTarget.files[0]);
                     }}
                   />
+                  <p className="errorMessage">{errors.file}</p>
                 </Form.Group>
               </Modal.Body>
               <Modal.Footer>

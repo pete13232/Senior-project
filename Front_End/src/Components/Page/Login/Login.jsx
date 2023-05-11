@@ -72,12 +72,6 @@ const Login = () => {
                 <Button variant="primary" type="submit" className="d-flex my-2">
                   Login
                 </Button>
-                <Link
-                  to="/signup"
-                  className="d-flex justify-content-center align-items-center signup-text ps-2"
-                >
-                  Sign up
-                </Link>
               </div>
             </Form>
             <p>{userObject?.firstName}</p>

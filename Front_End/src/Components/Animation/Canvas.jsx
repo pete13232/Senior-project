@@ -114,8 +114,6 @@ const Canvas = () => {
   useEffect(() => {
     let t0 = undefined;
     let t1 = undefined;
-    console.log("animationID");
-    console.log(animationID);
     if (mixer !== undefined && clips !== undefined) {
       if (animationID !== undefined) {
         MySwal.fire({

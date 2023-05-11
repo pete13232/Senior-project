@@ -69,16 +69,33 @@ const Home = () => {
     fetchData(`http://localhost:3333/animations/get?wordID=${wordID}`)
       .then((res) => {
         setAnimationList(res.data);
-        for (let i = 0; i < res.data.length; i++) {
-          fetchData(
-            `http://localhost:3333/animations/validateLog/${res.data[i]._id}`
-          ).then((logResult) => {
-            // temp_logList.splice(i, 0, logResult.animationLog);
-            setAnimationLogList((current) =>
-              current.splice(i, 0, logResult.animationLog)
-            );
-          });
-        }
+        Promise.all(
+          res.data.map((animation) =>
+            fetchData(
+              `http://localhost:3333/animations/validateLog/${animation._id}`
+            )
+              .then((response) => {
+                console.log("response.animationLog[0]");
+                console.log(response.animationLog[0]);
+                return response.animationLog[0];
+              })
+              .then((log) => {
+                console.log("log");
+                console.log(log);
+                if (log.userID !== null) {
+                  return { ...log, user: log.userID };
+                } else {
+                  delete log.userID;
+                  return { ...log, user: undefined };
+                }
+              })
+          )
+        ).then((results) => {
+          console.log("logs result");
+          console.log(results);
+
+          setAnimationLogList(results);
+        });
       })
       .catch((err) => {
         console.log(err);
@@ -209,6 +226,66 @@ const Home = () => {
       }
     });
   };
+
+  const validateAnimationAlert = (animation, index, stat) => {
+    MySwal.fire({
+      // Validate Animation confirmation
+      position: "center",
+      title: `ต้องการจะ${stat === true ? "แสดง" : "ลบ"}แอนิเมชัน\n"รูปแบบที่${
+        index + 1
+      }"\nหรือไม่ ?`,
+      text: `การกระทำนี้จะทำให้ผู้ใช้งาน${
+        stat === true ? "มองเห็น" : "มองไม่เห็น"
+      }แอนิเมชัน`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: stat === true ? "#198754" : "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: stat === true ? "แสดง" : "ซ่อน",
+      cancelButtonText: "ยกเลิก",
+    }).then((result) => {
+      // confirm validate
+      if (result.isConfirmed) {
+        const aniamtionForm = new FormData();
+        aniamtionForm.append("validateStat", stat);
+        axios
+          .post(
+            `http://localhost:3333/animations/validate/${animation._id}`,
+            aniamtionForm,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          )
+          .then(() => {
+            // validate success
+            MySwal.fire({
+              position: "center",
+              title: `${stat === true ? "แสดง" : "ซ่อน"}สำเร็จ!`,
+              text: `"รูปแบบที่${index + 1}"\nถูก${
+                stat === true ? "แสดง" : "ซ่อน"
+              }เรียบร้อย`,
+              icon: "success",
+            });
+            refetch(); // refetch changed data
+          })
+          .catch((error) => {
+            console.log(error);
+            //delete fail
+            const err = error.message;
+            MySwal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              html: err,
+              icon: "error",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+            });
+          });
+      }
+    });
+  };
   return (
     <>
       <Container fluid className="px-5">
@@ -290,12 +367,27 @@ const Home = () => {
                                   overlay={
                                     <Popover id={`popover-positioned-top`}>
                                       {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
-                                      <Popover.Body>Animation log</Popover.Body>
+                                      <Popover.Body>
+                                        {animationLogList[index]?.user !==
+                                        undefined
+                                          ? `ผู้ใช้งาน ${animationLogList[index]?.user.username} เป็นคนเปลี่ยนแปลงสถานะแอนิเมชันนี้`
+                                          : "ยังไม่มีผู้เชี่ยวชาญมาตรวจสอบแอนิเมชันนี้"}
+                                      </Popover.Body>
                                     </Popover>
                                   }
                                 >
-                                  <Button variant="secondary">
-                                    Animation status
+                                  <Button
+                                    variant={
+                                      animationLogList[index]?.validateStat ===
+                                      true
+                                        ? "success"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {animationLogList[index]?.validateStat ===
+                                    true
+                                      ? "ได้รับการตรวจสอบ"
+                                      : "ไม่ได้รับการตรวจสอบ"}
                                   </Button>
                                 </OverlayTrigger>
                               </div>
@@ -311,10 +403,25 @@ const Home = () => {
                                   </Button>
                                 </Link>
                                 <Button
-                                  variant="success"
+                                  variant={
+                                    animationLogList[index]?.validateStat ===
+                                    true
+                                      ? "secondary"
+                                      : "success"
+                                  }
                                   className="mx-2 button-class"
+                                  onClick={() =>
+                                    validateAnimationAlert(
+                                      animation,
+                                      index,
+                                      !animationLogList[index]?.validateStat
+                                    )
+                                  }
                                 >
-                                  แสดง
+                                  {animationLogList[index]?.validateStat ===
+                                  true
+                                    ? "ซ่อน"
+                                    : "แสดง"}
                                 </Button>
                                 <Button
                                   variant="danger"
@@ -329,106 +436,6 @@ const Home = () => {
                             </div>
                           </ListGroup.Item>
                         ))}
-                        <ListGroup.Item
-                          as="ul"
-                          className="d-flex align-items-center"
-                        >
-                          <div className="d-flex flex-fill  justify-content-between align-items-center">
-                            <div className="d-flex justify-content-between align-items-center ps-1">
-                              รูปแบบที่ X
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center ps-1">
-                              <OverlayTrigger
-                                trigger="focus"
-                                placement="top"
-                                overlay={
-                                  <Popover id={`popover-positioned-top`}>
-                                    {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
-                                    <Popover.Body>
-                                      แก้ไขโดย Username 16:52 12/05/23
-                                    </Popover.Body>
-                                  </Popover>
-                                }
-                              >
-                                <Button variant="success">
-                                  ได้รับการตรวจสอบ
-                                </Button>
-                              </OverlayTrigger>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center">
-                              <Link>
-                                <Button
-                                  variant="primary"
-                                  className="mx-2 button-class"
-                                >
-                                  เล่น
-                                </Button>
-                              </Link>
-                              <Button
-                                variant="secondary"
-                                className="mx-2 button-class"
-                              >
-                                ซ่อน
-                              </Button>
-                              <Button
-                                variant="danger"
-                                className="mx-2 button-class"
-                              >
-                                ลบ
-                              </Button>
-                            </div>
-                          </div>
-                        </ListGroup.Item>
-                        <ListGroup.Item
-                          as="ul"
-                          className="d-flex align-items-center"
-                        >
-                          <div className="d-flex flex-fill  justify-content-between align-items-center">
-                            <div className="d-flex justify-content-between align-items-center ps-1">
-                              รูปแบบที่ X
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center ps-1">
-                              <OverlayTrigger
-                                trigger="focus"
-                                placement="top"
-                                overlay={
-                                  <Popover id={`popover-positioned-top`}>
-                                    {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
-                                    <Popover.Body>
-                                      แก้ไขโดย Username 16:52 12/05/23
-                                    </Popover.Body>
-                                  </Popover>
-                                }
-                              >
-                                <Button variant="secondary">
-                                  ยังไม่ได้รับการตรวจสอบ
-                                </Button>
-                              </OverlayTrigger>
-                            </div>
-                            <div className="d-flex justify-content-between align-items-center">
-                              <Link>
-                                <Button
-                                  variant="primary"
-                                  className="mx-2 button-class"
-                                >
-                                  เล่น
-                                </Button>
-                              </Link>
-                              <Button
-                                variant="success"
-                                className="mx-2 button-class"
-                              >
-                                แสดง
-                              </Button>
-                              <Button
-                                variant="danger"
-                                className="mx-2 button-class"
-                              >
-                                ลบ
-                              </Button>
-                            </div>
-                          </div>
-                        </ListGroup.Item>
                       </ListGroup>
                     ) : (
                       <ListGroup as="ol" variant="flush">
