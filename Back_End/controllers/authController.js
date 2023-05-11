@@ -34,8 +34,8 @@ const handleErrors = (err) => {
 
 // Create Token
 const maxAge = 3 * 24 * 60 * 60; // 3 days
-const createToken = (newUser) => {
-  return jwt.sign({ newUser }, "tsl project secret", {
+const createToken = (user) => {
+  return jwt.sign({ user }, "tsl project secret", {
     expiresIn: maxAge,
   });
 };

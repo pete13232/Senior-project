@@ -12,23 +12,23 @@ router.route("/animations")
 
 // Create New Animation (json)
 router.route("/animations/add")
-    .post(uploadCloudAnimation)
+    .post([requireAuth, checkPermission(['admin'])], uploadCloudAnimation)
 
 // Create New Animation to local (.fbx)
-router.route("/animations/add/local")
-    .post(uploadLocalAnimation)
+// router.route("/animations/add/local")
+//     .post(uploadLocalAnimation)
 
 // Delete local original file (.fbx)
-router.route("/animations/delete/local")
-    .delete(deleteLocalOriginalFile)
+// router.route("/animations/delete/local")
+//     .delete(deleteLocalOriginalFile)
 
 // Delete local compressed file (.fbx)
-router.route("/animations/delete/local/compressed")
-    .delete(deleteLocalCompressFile)
+// router.route("/animations/delete/local/compressed")
+//     .delete(deleteLocalCompressFile)
 
 // Compresss original .json file from GCS
-router.route("/animations/compress/GCS")
-    .get(compressJsonAnimation)
+// router.route("/animations/compress/GCS")
+//     .get(compressJsonAnimation)
 
 
 // Find animation By wordID
@@ -42,7 +42,7 @@ router.route("/animations/validate/:animationID")
 
 // Get All animation validate log
 router.route("/animations/validateLog/:animationID")
-    .get(getAnimationLog)
+    .get([checkPermission(['admin', 'specialist', 'guest'])], getAnimationLog)
 
 // Delete Selected Animation
 router.route("/animations/delete/:animationID")
