@@ -1,14 +1,5 @@
-import { useState } from "react";
-import {
-  Form,
-  Button,
-  Card,
-  Col,
-  Row,
-  Container,
-  ListGroup,
-  ListGroupItem,
-} from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Card, Col, Row, Container, ListGroup, Table } from "react-bootstrap";
 import { Link, redirect } from "react-router-dom";
 import "./profile-style.css";
 import axios from "axios";
@@ -17,38 +8,29 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../redux/userReducer";
 
 const Profile = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
+  const fetchData = async (url, header) => {
+    const response = await axios.get(url, header);
+    return response.data;
+  };
   const userObject = useSelector((state) => state.user.userObject);
   const dispatch = useDispatch();
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log(`username: ${username}, password: ${password}`);
 
-    console.log(JSON.stringify({ username, password }));
+  const [validateLogList, setValidateLogList] = useState([]);
+  // dispatch(setUser(res.data.newUser));
 
-    axios
-      .post(
-        "http://localhost:3333/login",
-        JSON.stringify({ username, password }),
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      )
-      .then((res) => {
-        dispatch(setUser(res.data.newUser));
-        localStorage.setItem("token", res.data.token);
-        window.dispatchEvent(new Event("storage")); // update storage after set item
-        console.log("localStorage = " + localStorage.getItem("token"));
-        alert("Pass new User =" + res.data);
-        redirect("/");
-      })
-      .catch((error) => {
-        alert("There was an error!" + error);
-        console.error("There was an error!", error);
+  useEffect(() => {
+    if (userObject !== null) {
+      fetchData(`http://localhost:3333/users/validateLog/${userObject._id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }).then((res) => {
+        console.log("res");
+        console.log(res.userLog);
+        setValidateLogList(res.userLog);
       });
-  };
+    }
+  }, [userObject]);
 
   return (
     <div className="profile-background ">
@@ -63,31 +45,25 @@ const Profile = () => {
                 <div className="d-flex  justify-content-start align-items-center">
                   <div className="d-flex my-3">
                     <div className="mx-4 ">First Name :</div>{" "}
-                    <div className="mx-4">Chawanrat</div>
+                    <div className="mx-4">{userObject?.firstName}</div>
                   </div>
                 </div>
                 <div className="d-flex  justify-content-start align-items-center">
                   <div className="d-flex my-3">
                     <div className="mx-4">Last Name :</div>{" "}
-                    <div className="mx-4">Nurat</div>
+                    <div className="mx-4">{userObject?.lastName}</div>
                   </div>
                 </div>
                 <div className="d-flex  justify-content-start align-items-center">
                   <div className="d-flex my-3">
                     <div className="mx-4">Username :</div>{" "}
-                    <div className="mx-4">Altinate</div>
-                  </div>
-                </div>
-                <div className="d-flex  justify-content-start align-items-center">
-                  <div className="d-flex my-3">
-                    <div className="mx-4">Email :</div>{" "}
-                    <div className="mx-4">chawanrat.nurat@mail.kmutt.ac.th</div>
+                    <div className="mx-4">{userObject?.username}</div>
                   </div>
                 </div>
                 <div className="d-flex  justify-content-start align-items-center">
                   <div className="d-flex my-3">
                     <div className="mx-4">Role :</div>{" "}
-                    <div className="mx-4">Admin</div>
+                    <div className="mx-4">{userObject?.role}</div>
                   </div>
                 </div>
               </Card.Body>
@@ -95,49 +71,34 @@ const Profile = () => {
           </Col>
         </Row>
         <Row className="justify-content-center ">
-          <Col md={5}>
+          <Col md={8}>
             <Card className="my-3">
               <Card.Header as="h3" className="profile-card-header ">
                 Validation log
               </Card.Header>
-              <ListGroup as="ol" numbered variant="flush">
-                <ListGroup.Item as="li" className="d-flex align-items-center">
-                  <div className="d-flex flex-fill  justify-content-between align-items-center">
-                    <div className="d-flex justify-content-between align-items-center ps-1">
-                      aimationID = xxxxx แก้ไขโดย Username 16:52 12/05/23
-                    </div>
-                  </div>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" className="d-flex align-items-center">
-                  <div className="d-flex flex-fill  justify-content-between align-items-center">
-                    <div className="d-flex justify-content-between align-items-center ps-1">
-                      aimationID = xxxxx แก้ไขโดย Username 16:52 12/05/23
-                    </div>
-                  </div>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" className="d-flex align-items-center">
-                  <div className="d-flex flex-fill  justify-content-between align-items-center">
-                    <div className="d-flex justify-content-between align-items-center ps-1">
-                      aimationID = xxxxx แก้ไขโดย Username 16:52 12/05/23
-                    </div>
-                  </div>
-                </ListGroup.Item>
 
-                <ListGroup.Item as="li" className="d-flex align-items-center">
-                  <div className="d-flex flex-fill  justify-content-between align-items-center">
-                    <div className="d-flex justify-content-between align-items-center ps-1">
-                      aimationID = xxxxx แก้ไขโดย Username 16:52 12/05/23
-                    </div>
-                  </div>
-                </ListGroup.Item>
-                <ListGroup.Item as="li" className="d-flex align-items-center">
-                  <div className="d-flex flex-fill  justify-content-between align-items-center">
-                    <div className="d-flex justify-content-between align-items-center ps-1">
-                      aimationID = xxxxx แก้ไขโดย Username 16:52 12/05/23
-                    </div>
-                  </div>
-                </ListGroup.Item>
-              </ListGroup>
+              <Table striped bordered hover>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Word</th>
+                    <th>AnimationID</th>
+                    <th>ValidateStat</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {validateLogList.map((log, index) => (
+                    <tr>
+                      <td>{index + 1}</td>
+                      <td>{log.animationID.wordID.word}</td>
+                      <td>{log.animationID._id}</td>
+                      <td>
+                        {log.validateStat === true ? "อนุมัติ" : "ไม่อนุมัติ"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
             </Card>
           </Col>
         </Row>

@@ -16,6 +16,7 @@ import Profile from "./Components/Page/Profile/Profile";
 
 import store from "./Components/redux/store";
 import { Provider } from "react-redux";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -41,7 +42,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/signup",
-        element: <Signup />,
+        element: Signup,
       },
       {
         path: "/login",
@@ -49,7 +50,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/profile",
-        element: <Profile />,
+        element: Profile,
       },
     ],
   },
@@ -59,6 +60,7 @@ const router = createBrowserRouter([
     element: <Navigate to="/" replace={true} />,
   },
 ]);
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <RouterProvider router={router} />

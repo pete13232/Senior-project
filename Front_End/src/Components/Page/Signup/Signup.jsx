@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -28,8 +28,8 @@ const Signup = () => {
     const userForm = new FormData();
     userForm.append("username", values.username);
     userForm.append("password", values.password);
-    userForm.append("firstname", values.firstname);
-    userForm.append("lastname", values.lastname);
+    userForm.append("firstName", values.firstname);
+    userForm.append("lastName", values.lastname);
     userForm.append("role", "specialist");
     axios
       .post("http://localhost:3333/users/add", userForm, {
@@ -43,12 +43,13 @@ const Signup = () => {
           title: "สมัครสมาชิกสำเร็จ!",
           text: `ยูสเซอร์"${values.username}"\nถูกสร้างเรียบร้อย`,
           icon: "success",
-          onClose: () => {
+          didClose: () => {
             navigate("/");
           },
         });
       })
       .catch((error) => {
+        console.log(error);
         MySwal.fire({
           position: "center",
           title: "เกิดข้อผิดพลาดในการสมัครสมาชิก",
@@ -59,13 +60,16 @@ const Signup = () => {
         });
       });
   };
+  // useEffect(() => {
+  //   navigate("/login");
+  // }, []);
 
   return (
     <div className="signup-background">
       <Col md={4}>
         <Card>
           <Card.Header as="h3" className="signupcard-header">
-            Signup
+            Signup for Specialist
           </Card.Header>
           <Card.Body>
             <Formik
@@ -93,7 +97,7 @@ const Signup = () => {
               }) => (
                 <Form onSubmit={handleSubmit} id="signUpForm">
                   <Form.Group controlId="formBasicUsername" className="py-2">
-                    <Form.Label>ชื่อยูสเซอร์</Form.Label>
+                    <Form.Label>Username</Form.Label>
                     <Form.Control
                       name="username"
                       type="text"
@@ -104,7 +108,7 @@ const Signup = () => {
                   </Form.Group>
                   <p className="errorMessage">{errors.username}</p>
                   <Form.Group controlId="formBasicPassword" className="py-2">
-                    <Form.Label>พาสเวิร์ด</Form.Label>
+                    <Form.Label>Password</Form.Label>
                     <Form.Control
                       name="password"
                       type="password"
@@ -118,7 +122,7 @@ const Signup = () => {
                     controlId="formBasicConfirmPassword"
                     className="py-2"
                   >
-                    <Form.Label>ยืนยันพาสเวิร์ด</Form.Label>
+                    <Form.Label>Confirm password</Form.Label>
                     <Form.Control
                       name="confirmPassword"
                       type="password"

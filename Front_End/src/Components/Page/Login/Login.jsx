@@ -1,18 +1,22 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
-import { Link, redirect } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./login-style.css";
 import axios from "axios";
 
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../redux/userReducer";
+import jwt_decode from "jwt-decode";
 
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   const userObject = useSelector((state) => state.user.userObject);
   const dispatch = useDispatch();
+  const MySwal = withReactContent(Swal);
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(`username: ${username}, password: ${password}`);
@@ -28,18 +32,35 @@ const Login = () => {
         }
       )
       .then((res) => {
-        dispatch(setUser(res.data.newUser));
         localStorage.setItem("token", res.data.token);
         window.dispatchEvent(new Event("storage")); // update storage after set item
-        console.log("localStorage = " + localStorage.getItem("token"));
-        alert("Pass new User =" + res.data);
-        redirect("/");
+        const decodedToken = jwt_decode(res.data.token);
+        dispatch(setUser(decodedToken.user));
+        MySwal.fire({
+          position: "center",
+          title: `Login สำเร็จ`,
+          icon: "success",
+          didClose: () => navigate("/"),
+        });
       })
       .catch((error) => {
-        alert("There was an error!" + error);
-        console.error("There was an error!", error);
+        const err = error.message;
+        MySwal.fire({
+          position: "center",
+          title: "เกิดข้อผิดพลาด",
+          html: err,
+          icon: "error",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
       });
   };
+
+  useEffect(() => {
+    if (userObject !== null && localStorage.getItem("token") !== null) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <div className="login-background">
