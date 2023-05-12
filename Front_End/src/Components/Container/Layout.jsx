@@ -7,7 +7,7 @@ import jwt_decode from "jwt-decode";
 const Layout = () => {
   const navigate = useNavigate();
   const userObject = useSelector((state) => state.user.userObject);
-  const token = localStorage.getItem("token");
+
   const dispatch = useDispatch();
 
   const isTokenExpired = (token) => {
@@ -21,13 +21,17 @@ const Layout = () => {
   };
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("Layout");
     if (isTokenExpired(token)) {
+      console.log("Expired");
       localStorage.removeItem("token");
       window.dispatchEvent(new Event("storage")); // update storage after set item
       dispatch(setUser(null));
-      navigate("/login");
+      // navigate("/");
     } else {
       if (userObject === null) {
+        console.log("userObject === null");
         const decodedToken = jwt_decode(token);
         dispatch(setUser(decodedToken.user));
       }

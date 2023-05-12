@@ -19,9 +19,6 @@ const Login = () => {
   const MySwal = withReactContent(Swal);
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(`username: ${username}, password: ${password}`);
-
-    console.log(JSON.stringify({ username, password }));
 
     axios
       .post(
@@ -95,7 +92,6 @@ const Login = () => {
                 </Button>
               </div>
             </Form>
-            <p>{userObject?.firstName}</p>
           </Card.Body>
         </Card>
       </Col>

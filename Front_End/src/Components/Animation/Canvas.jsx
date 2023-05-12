@@ -61,11 +61,7 @@ const Canvas = () => {
   };
 
   useEffect(() => {
-    console.log("useEffect run");
-    console.log("loaded", loaded);
-    console.log("ref", ref);
     if (!loaded && ref) {
-      console.log("in if");
       init = new SceneInit(ref);
       init.initialize();
       animate();
@@ -81,10 +77,8 @@ const Canvas = () => {
         text: `กำลังโหลดโมเดลตัวละคร`,
         allowOutsideClick: false,
         didOpen: () => {
-          console.log("swal fire");
           MySwal.showLoading();
           model.then((object) => {
-            console.log("Loaded model");
             init.scene.add(object);
             let s = 0.28;
             object.scale.set(s, s, s);
@@ -126,7 +120,6 @@ const Canvas = () => {
             /*-----------------------Fetch Compress JSON from cloud ------------------- */
             fetchData(`http://localhost:3333/animations/${animationID}`)
               .then((resAnimation) => {
-                console.log("fetch for url success");
                 return fetchData(resAnimation.data.file, {
                   responseType: "arraybuffer", // Tell axios to return binary data
                 });
@@ -155,8 +148,6 @@ const Canvas = () => {
                       THREE.AnimationClip.parse(JSON.parse(decompressedClip))
                     )
                   );
-                  console.log("temp2_clips");
-                  console.log(temp2_clips);
                   setClips(temp2_clips);
 
                   temp2_clips[0].play();
@@ -171,11 +162,9 @@ const Canvas = () => {
               /*-----------------------Fetch Normal JSON from cloud ------------------- */
               // fetchData(`http://localhost:3333/animations/${animationID}`)
               //   .then((resAnimation) => {
-              //     console.log("fetch for url success");
               //     return fetchData(resAnimation.data.file);
               //   })
               //   .then((responseClip) => {
-              //     console.log("fetch JSON success");
               //     temp2_mixer = mixer;
               //     temp2_clips = clips;
               //     if (temp2_clips.length > 0) {
@@ -203,7 +192,6 @@ const Canvas = () => {
               //   .then((resAnimation) => {
               //     const animationForm = new FormData();
               //     animationForm.append("GCS_filename", resAnimation.data.file);
-              //     console.log(resAnimation.data.file);
               //     return fetchData(
               //       `http://localhost:3333/animations/compress/GCS?animationID=${animationID}`,
               //       {},
@@ -244,7 +232,8 @@ const Canvas = () => {
               //     reader.readAsArrayBuffer(compressedClip);
               //   })
               /*----------------------- Fetch Backend Compress JSON from cloud ------------------- */
-              .catch((err) => {
+              .catch((error) => {
+                const err = error.message;
                 MySwal.fire({
                   position: "center",
                   title: "เกิดข้อผิดพลาด",
@@ -253,7 +242,6 @@ const Canvas = () => {
                   allowOutsideClick: false,
                   allowEscapeKey: false,
                 });
-                console.log(err);
               });
           },
         });

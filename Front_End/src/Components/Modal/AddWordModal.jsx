@@ -27,9 +27,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
     const wordForm = new FormData();
     wordForm.append("word", values.word);
     wordForm.append("description", values.description);
-    console.log(
-      "localStorage before add word = " + localStorage.getItem("token")
-    );
+
     axios
       .post("http://localhost:3333/words/add", wordForm, {
         headers: {
@@ -76,13 +74,13 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                         icon: "success",
                       });
                       refetch(); // refetch changed data
-                      console.log(res);
                     })
                     .catch((error) => {
+                      const err = error.message;
                       MySwal.fire({
                         position: "center",
                         title: "เกิดข้อผิดพลาดในการอัปโหลดแอนิเมชัน",
-                        html: error,
+                        html: err,
                         icon: "error",
                         allowOutsideClick: false,
                         allowEscapeKey: false,
@@ -113,15 +111,15 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
         }
       })
       .catch((error) => {
+        const err = error.message;
         MySwal.fire({
           position: "center",
           title: "เกิดข้อผิดพลาดในการเพิ่มคำ",
-          html: error,
+          html: err,
           icon: "error",
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
-        console.error("There was an error!", error);
       });
   };
   return (

@@ -12,6 +12,10 @@ const UploadAnimation = ({ currentWordID, currentWord, refetch }) => {
   });
 
   const MySwal = withReactContent(Swal);
+
+  const AnimationOptimizer = (tracks) => {
+    return;
+  };
   const handleAddAnimation = (values) => {
     document.getElementById("addAnimationForm").reset();
     if (values.animation instanceof File) {
@@ -51,7 +55,6 @@ const UploadAnimation = ({ currentWordID, currentWord, refetch }) => {
                     icon: "success",
                   });
                   refetch(); // refetch changed data
-                  console.log(res);
                 })
                 .catch((error) => {
                   MySwal.fire({

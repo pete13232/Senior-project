@@ -10,7 +10,6 @@ const model = new Promise((res, rej) => {
         child.receiveShadow = true;
       }
     });
-    console.log("model", object);
     res(object);
   });
 

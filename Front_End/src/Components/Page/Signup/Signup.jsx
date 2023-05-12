@@ -7,10 +7,12 @@ import "./signup-style.css";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useNavigate } from "react-router-dom";
-
+import { useSelector } from "react-redux";
 const Signup = () => {
+  const userObject = useSelector((state) => state.user.userObject);
   const MySwal = withReactContent(Swal);
   const navigate = useNavigate();
+
   const schema = yup.object().shape({
     username: yup.string().required("กรุณากรอกชื่อยูสเซอร์"),
     password: yup
@@ -24,6 +26,7 @@ const Signup = () => {
     firstname: yup.string().required("กรุณากรอกชื่อ"),
     lastname: yup.string().required("กรุณากรอกนามสกุล"),
   });
+
   const submitSignUp = (values) => {
     const userForm = new FormData();
     userForm.append("username", values.username);
@@ -60,9 +63,9 @@ const Signup = () => {
         });
       });
   };
-  // useEffect(() => {
-  //   navigate("/login");
-  // }, []);
+  useEffect(() => {
+    if (userObject === null) navigate("/login");
+  }, [userObject]);
 
   return (
     <div className="signup-background">

@@ -75,13 +75,9 @@ const Home = () => {
               `http://localhost:3333/animations/validateLog/${animation._id}`
             )
               .then((response) => {
-                console.log("response.animationLog[0]");
-                console.log(response.animationLog[0]);
                 return response.animationLog[0];
               })
               .then((log) => {
-                console.log("log");
-                console.log(log);
                 if (log.userID !== null) {
                   return { ...log, user: log.userID };
                 } else {
@@ -91,9 +87,6 @@ const Home = () => {
               })
           )
         ).then((results) => {
-          console.log("logs result");
-          console.log(results);
-
           setAnimationLogList(results);
         });
       })
@@ -123,10 +116,6 @@ const Home = () => {
     }
   }, [wordID]);
 
-  useEffect(() => {
-    console.log("animationLogList");
-    console.log(animationLogList);
-  }, [animationLogList]);
 
   const [showAddWord, setShowAddWord] = useState(false);
   const [showEditWord, setShowEditWord] = useState(false);

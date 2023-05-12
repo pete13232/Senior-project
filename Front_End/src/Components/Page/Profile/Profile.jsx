@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { Card, Col, Row, Container, ListGroup, Table } from "react-bootstrap";
-import { Link, redirect } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./profile-style.css";
 import axios from "axios";
 
-import { useSelector, useDispatch } from "react-redux";
-import { setUser } from "../../redux/userReducer";
+import { useSelector } from "react-redux";
 
 const Profile = () => {
   const fetchData = async (url, header) => {
@@ -13,7 +12,8 @@ const Profile = () => {
     return response.data;
   };
   const userObject = useSelector((state) => state.user.userObject);
-  const dispatch = useDispatch();
+
+  const navigate = useNavigate();
 
   const [validateLogList, setValidateLogList] = useState([]);
   // dispatch(setUser(res.data.newUser));
@@ -25,10 +25,10 @@ const Profile = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       }).then((res) => {
-        console.log("res");
-        console.log(res.userLog);
         setValidateLogList(res.userLog);
       });
+    } else {
+      navigate("/login");
     }
   }, [userObject]);
 
