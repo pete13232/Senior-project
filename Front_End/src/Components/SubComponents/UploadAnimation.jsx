@@ -13,9 +13,6 @@ const UploadAnimation = ({ currentWordID, currentWord, refetch }) => {
 
   const MySwal = withReactContent(Swal);
 
-  const AnimationOptimizer = (tracks) => {
-    return;
-  };
   const handleAddAnimation = (values) => {
     document.getElementById("addAnimationForm").reset();
     if (values.animation instanceof File) {

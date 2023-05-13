@@ -32,6 +32,10 @@ const Profile = () => {
     }
   }, [userObject]);
 
+  // useEffect(() => {
+  //   console.log(validateLogList);
+  // }, [validateLogList]);
+
   return (
     <div className="profile-background ">
       <Container>
@@ -90,8 +94,8 @@ const Profile = () => {
                   {validateLogList.map((log, index) => (
                     <tr>
                       <td>{index + 1}</td>
-                      <td>{log.animationID.wordID.word}</td>
-                      <td>{log.animationID._id}</td>
+                      <td>{log.animationID?.wordID.word}</td>
+                      <td>{log.animationID?._id}</td>
                       <td>
                         {log.validateStat === true ? "อนุมัติ" : "ไม่อนุมัติ"}
                       </td>
