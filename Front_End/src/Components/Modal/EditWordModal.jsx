@@ -48,7 +48,6 @@ const EditWordModal = ({
             icon: "success",
           });
           refetch(); // refetch changed data
-          console.log(res);
         })
         .catch((error) => {
           MySwal.fire({

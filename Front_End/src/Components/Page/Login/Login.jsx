@@ -1,23 +1,24 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Form, Button, Card, Col } from "react-bootstrap";
-import { Link, redirect } from "react-router-dom";
-import "./style.css";
+import { Link, useNavigate } from "react-router-dom";
+import "./login-style.css";
 import axios from "axios";
 
 import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "../../redux/userReducer";
+import jwt_decode from "jwt-decode";
 
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 const Login = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
+  const navigate = useNavigate();
   const userObject = useSelector((state) => state.user.userObject);
   const dispatch = useDispatch();
+  const MySwal = withReactContent(Swal);
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(`username: ${username}, password: ${password}`);
-
-    console.log(JSON.stringify({ username, password }));
 
     axios
       .post(
@@ -28,24 +29,41 @@ const Login = () => {
         }
       )
       .then((res) => {
-        dispatch(setUser(res.data.newUser));
         localStorage.setItem("token", res.data.token);
         window.dispatchEvent(new Event("storage")); // update storage after set item
-        console.log("localStorage = " + localStorage.getItem("token"));
-        alert("Pass new User =" + res.data);
-        redirect("/");
+        const decodedToken = jwt_decode(res.data.token);
+        dispatch(setUser(decodedToken.user));
+        MySwal.fire({
+          position: "center",
+          title: `Login สำเร็จ`,
+          icon: "success",
+          didClose: () => navigate("/"),
+        });
       })
       .catch((error) => {
-        alert("There was an error!" + error);
-        console.error("There was an error!", error);
+        const err = error.message;
+        MySwal.fire({
+          position: "center",
+          title: "เกิดข้อผิดพลาด",
+          html: err,
+          icon: "error",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
       });
   };
 
+  useEffect(() => {
+    if (userObject !== null && localStorage.getItem("token") !== null) {
+      navigate("/");
+    }
+  }, []);
+
   return (
-    <div className="background">
+    <div className="login-background">
       <Col md={4}>
         <Card>
-          <Card.Header as="h3" className="logincard-header">
+          <Card.Header as="h3" className="login-card-header">
             Login
           </Card.Header>
           <Card.Body>
@@ -72,15 +90,8 @@ const Login = () => {
                 <Button variant="primary" type="submit" className="d-flex my-2">
                   Login
                 </Button>
-                <Link
-                  to="/signup"
-                  className="d-flex justify-content-center align-items-center signup-text ps-2"
-                >
-                  Sign up
-                </Link>
               </div>
             </Form>
-            <p>{userObject?.firstName}</p>
           </Card.Body>
         </Card>
       </Col>

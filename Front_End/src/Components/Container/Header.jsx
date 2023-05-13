@@ -7,10 +7,19 @@ import {
   Row,
   Col,
 } from "react-bootstrap";
-import "./style.css";
+import "./header-style.css";
 import { FaUserCircle } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useSelector, useDispatch } from "react-redux";
+import { setUser } from "./../redux/userReducer";
 const Header = () => {
+  const dispatch = useDispatch();
+  const userObject = useSelector((state) => state.user.userObject);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    window.dispatchEvent(new Event("storage")); // update storage after set item
+    dispatch(setUser(null));
+  };
   return (
     <>
       <Navbar fixed="top" variant="dark" className="Navbar">
@@ -36,9 +45,38 @@ const Header = () => {
           </Col>
           <Col>
             <div className="d-flex justify-content-end">
-              <Link to="/login">
-                <Button variant="outline-light">Login</Button>
-              </Link>
+              {userObject !== null &&
+                localStorage.getItem("token") !== null &&
+                userObject.role === "admin" && (
+                  <Link to="/signup">
+                    <Button variant="outline-light" className="mx-2">
+                      Signup
+                    </Button>
+                  </Link>
+                )}
+              {userObject !== null &&
+                localStorage.getItem("token") !== null && (
+                  <Link to="/profile">
+                    <Button variant="outline-light" className="mx-2">
+                      Profile
+                    </Button>
+                  </Link>
+                )}
+              {userObject !== null && localStorage.getItem("token") !== null ? (
+                <Button
+                  variant="outline-light"
+                  className="mw-2"
+                  onClick={() => handleLogout()}
+                >
+                  Logout
+                </Button>
+              ) : (
+                <Link to="/login">
+                  <Button variant="outline-light" className="mw-2">
+                    Login
+                  </Button>
+                </Link>
+              )}
 
               {/* <FaUserCircle color="white" size={24} /> */}
             </div>

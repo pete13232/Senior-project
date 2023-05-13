@@ -9,8 +9,8 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import pako from "pako";
 const Canvas = () => {
-  const fetchData = async (url) => {
-    const response = await axios.get(url);
+  const fetchData = async (url, header, data) => {
+    const response = await axios.get(url, header, data);
     return response.data;
   };
   const { wordID, animationID } = useParams();
@@ -28,7 +28,9 @@ const Canvas = () => {
   const [mixer, setMixer] = useState(undefined);
   const [clips, setClips] = useState([]);
 
-  const ref = useRef();
+  const ref = useRef(null);
+  const mixerRef = useRef(null);
+
   const [loaded, setLoaded] = useState(false);
   const [clip, setClip] = useState(undefined);
   const clock = new THREE.Clock();
@@ -58,45 +60,8 @@ const Canvas = () => {
     }
   };
 
-  const clipTransform = (clip) => {
-    const newTrack = clip.tracks.map((keyframe) => {
-      if (keyframe.type === "vector") {
-        return new THREE.VectorKeyframeTrack(
-          keyframe.name,
-          keyframe.times,
-          keyframe.values
-        );
-      } else if (keyframe.type === "quaternion") {
-        return new THREE.QuaternionKeyframeTrack(
-          keyframe.name,
-          keyframe.times,
-          keyframe.values
-        );
-      } else if (keyframe.type === "number") {
-        return new THREE.NumberKeyframeTrack(
-          keyframe.name,
-          keyframe.times,
-          keyframe.values
-        );
-      } else {
-        return undefined;
-      }
-    });
-
-    const newClip = new THREE.AnimationClip(
-      "AnimationClip",
-      clip.duration,
-      newTrack
-    );
-    return newClip;
-  };
-
   useEffect(() => {
-    console.log("useEffect run");
-    console.log("loaded", loaded);
-    console.log("ref", ref);
     if (!loaded && ref) {
-      console.log("in if");
       init = new SceneInit(ref);
       init.initialize();
       animate();
@@ -112,16 +77,15 @@ const Canvas = () => {
         text: `กำลังโหลดโมเดลตัวละคร`,
         allowOutsideClick: false,
         didOpen: () => {
-          console.log("swal fire");
           MySwal.showLoading();
           model.then((object) => {
-            console.log("Loaded model");
             init.scene.add(object);
             let s = 0.28;
             object.scale.set(s, s, s);
             object.position.y = -32;
             temp1_mixer = new THREE.AnimationMixer(object);
             setMixer(temp1_mixer);
+            mixerRef.current = temp1_mixer;
 
             temp1_clips = object.animations.map((animation) => {
               return temp1_mixer.clipAction(animation);
@@ -136,9 +100,14 @@ const Canvas = () => {
 
       setLoaded(true);
     }
+    return () => {
+      mixerRef.current?.stopAllAction();
+    };
   }, [ref, loaded]);
 
   useEffect(() => {
+    let t0 = undefined;
+    let t1 = undefined;
     if (mixer !== undefined && clips !== undefined) {
       if (animationID !== undefined) {
         MySwal.fire({
@@ -146,42 +115,136 @@ const Canvas = () => {
           text: `กำลังโหลดแอนิเมชันตัวละคร`,
           allowOutsideClick: false,
           didOpen: () => {
+            t0 = performance.now();
             MySwal.showLoading();
+            /*-----------------------Fetch Compress JSON from cloud ------------------- */
+            fetchData(`http://localhost:3333/animations/${animationID}`)
+              .then((resAnimation) => {
+                return fetchData(resAnimation.data.file, {
+                  responseType: "arraybuffer", // Tell axios to return binary data
+                });
+              })
+              .then((responseClip) => {
+                const compressedClip = new Blob([responseClip]);
+
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const uint8array = new Uint8Array(reader.result);
+
+                  // Inflate the compressed data using pako
+                  const decompressedClip = pako.inflate(uint8array, {
+                    to: "string",
+                  });
+
+                  temp2_mixer = mixer;
+                  temp2_clips = clips;
+                  if (temp2_clips.length > 0) {
+                    temp2_mixer.stopAllAction();
+                    temp2_clips.splice(0);
+                  }
+
+                  temp2_clips.push(
+                    temp2_mixer.clipAction(
+                      THREE.AnimationClip.parse(JSON.parse(decompressedClip))
+                    )
+                  );
+                  setClips(temp2_clips);
+
+                  temp2_clips[0].play();
+                  MySwal.close();
+                  t1 = performance.now();
+                  console.log(`myFunction took ${t1 - t0} milliseconds.`);
+                };
+                reader.readAsArrayBuffer(compressedClip);
+              })
+              /*-----------------------Fetch Compress JSON from cloud ------------------- */
+
+              /*-----------------------Fetch Normal JSON from cloud ------------------- */
+              // fetchData(`http://localhost:3333/animations/${animationID}`)
+              //   .then((resAnimation) => {
+              //     return fetchData(resAnimation.data.file);
+              //   })
+              //   .then((responseClip) => {
+              //     temp2_mixer = mixer;
+              //     temp2_clips = clips;
+              //     if (temp2_clips.length > 0) {
+              //       temp2_clips.splice(0);
+              //     }
+
+              //     temp2_clips.push(
+              //       temp2_mixer.clipAction(
+              //         THREE.AnimationClip.parse(responseClip)
+              //       )
+              //     );
+              //     // clips.push(mixer.clipAction(clipTransform(responseClip)));
+
+              //     setClips(temp2_clips);
+
+              //     clips[0].play();
+              //     MySwal.close();
+              //     t1 = performance.now();
+              //     console.log(`myFunction took ${t1 - t0} milliseconds.`);
+              //   })
+              /*-----------------------Fetch Normal JSON from cloud ------------------- */
+              /*----------------------- Fetch Backend Compress JSON from cloud ------------------- */
+
+              // fetchData(`http://localhost:3333/animations/${animationID}`)
+              //   .then((resAnimation) => {
+              //     const animationForm = new FormData();
+              //     animationForm.append("GCS_filename", resAnimation.data.file);
+              //     return fetchData(
+              //       `http://localhost:3333/animations/compress/GCS?animationID=${animationID}`,
+              //       {},
+              //       animationForm
+              //     );
+              //   })
+              //   .then((responseClip) => {
+              //     const compressedClip = new Blob([responseClip]);
+
+              //     const reader = new FileReader();
+              //     reader.onload = () => {
+              //       const uint8array = new Uint8Array(reader.result);
+
+              //       // Inflate the compressed data using pako
+              //       const decompressedClip = pako.inflate(uint8array, {
+              //         to: "string",
+              //       });
+
+              //       temp2_mixer = mixer;
+              //       temp2_clips = clips;
+              //       if (temp2_clips.length > 0) {
+              //         temp2_clips.splice(0);
+              //       }
+
+              //       temp2_clips.push(
+              //         temp2_mixer.clipAction(
+              //           THREE.AnimationClip.parse(JSON.parse(decompressedClip))
+              //         )
+              //       );
+
+              //       setClips(temp2_clips);
+
+              //       clips[0].play();
+              //       MySwal.close();
+              //       t1 = performance.now();
+              //       console.log(`myFunction took ${t1 - t0} milliseconds.`);
+              //     };
+              //     reader.readAsArrayBuffer(compressedClip);
+              //   })
+              /*----------------------- Fetch Backend Compress JSON from cloud ------------------- */
+              .catch((error) => {
+                const err = error.message;
+                MySwal.fire({
+                  position: "center",
+                  title: "เกิดข้อผิดพลาด",
+                  html: err,
+                  icon: "error",
+                  allowOutsideClick: false,
+                  allowEscapeKey: false,
+                });
+              });
           },
         });
-        fetchData(`http://localhost:3333/animations/${animationID}`)
-          .then((resAnimation) => {
-            console.log("fetch for url success");
-            return fetchData(resAnimation.data.file);
-          })
-          .then((responseClip) => {
-            const decompressedClip = pako.inflate(responseClip, {
-              to: "string",
-            });
-            console.log(decompressedClip);
-            console.log("fetch JSON success");
-            temp2_mixer = mixer;
-            temp2_clips = clips;
-            if (temp2_clips.length > 0) {
-              temp2_clips.splice(0);
-            }
-            console.log(clips);
-            const t0 = performance.now();
-            temp2_clips.push(
-              temp2_mixer.clipAction(clipTransform(decompressedClip))
-            );
-            // clips.push(mixer.clipAction(clipTransform(responseClip)));
-
-            setClips(temp2_clips);
-
-            clips[0].play();
-            MySwal.close();
-            const t1 = performance.now();
-            console.log(`myFunction took ${t1 - t0} milliseconds.`);
-          })
-          .catch((err) => {
-            console.log(err);
-          });
       } else if (animationID === undefined) {
         temp2_clips = clips;
         temp2_mixer = mixer;

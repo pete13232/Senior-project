@@ -8,6 +8,8 @@ import {
   Col,
   ListGroup,
   Form,
+  OverlayTrigger,
+  Popover,
 } from "react-bootstrap";
 
 import {
@@ -18,14 +20,14 @@ import {
   FaEdit,
 } from "react-icons/fa";
 
-import "./style.css";
+import "./home-style.css";
 
 import axios from "axios";
 import { useParams, Link } from "react-router-dom";
 
 import AddWordModal from "../../Modal/AddWordModal";
 import EditWordModal from "../../Modal/EditWordModal";
-
+import UploadAnimation from "../../SubComponents/UploadAnimation";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
@@ -42,6 +44,7 @@ const Home = () => {
   const [wordList, setWordList] = useState([]);
   const [word, setWord] = useState(null);
   const [animationList, setAnimationList] = useState([]);
+  const [animationLogList, setAnimationLogList] = useState([]);
 
   const fetchWordList = () => {
     fetchData("http://localhost:3333/words")
@@ -66,6 +69,26 @@ const Home = () => {
     fetchData(`http://localhost:3333/animations/get?wordID=${wordID}`)
       .then((res) => {
         setAnimationList(res.data);
+        Promise.all(
+          res.data.map((animation) =>
+            fetchData(
+              `http://localhost:3333/animations/validateLog/${animation._id}`
+            )
+              .then((response) => {
+                return response.animationLog[0];
+              })
+              .then((log) => {
+                if (log.userID !== null) {
+                  return { ...log, user: log.userID };
+                } else {
+                  delete log.userID;
+                  return { ...log, user: undefined };
+                }
+              })
+          )
+        ).then((results) => {
+          setAnimationLogList(results);
+        });
       })
       .catch((err) => {
         console.log(err);
@@ -93,6 +116,7 @@ const Home = () => {
     }
   }, [wordID]);
 
+
   const [showAddWord, setShowAddWord] = useState(false);
   const [showEditWord, setShowEditWord] = useState(false);
 
@@ -104,8 +128,8 @@ const Home = () => {
       text: "การกระทำนี้ไม่สามารถย้อนกลับได้",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     }).then((result) => {
@@ -152,8 +176,8 @@ const Home = () => {
       text: "การกระทำนี้ไม่สามารถย้อนกลับได้",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
       confirmButtonText: "ลบ",
       cancelButtonText: "ยกเลิก",
     }).then((result) => {
@@ -171,6 +195,66 @@ const Home = () => {
               position: "center",
               title: "ลบสำเร็จ!",
               text: `"รูปแบบที่${index + 1}"\nถูกลบเรียบร้อย`,
+              icon: "success",
+            });
+            refetch(); // refetch changed data
+          })
+          .catch((error) => {
+            console.log(error);
+            //delete fail
+            const err = error.message;
+            MySwal.fire({
+              position: "center",
+              title: "เกิดข้อผิดพลาด",
+              html: err,
+              icon: "error",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+            });
+          });
+      }
+    });
+  };
+
+  const validateAnimationAlert = (animation, index, stat) => {
+    MySwal.fire({
+      // Validate Animation confirmation
+      position: "center",
+      title: `ต้องการจะ${stat === true ? "แสดง" : "ลบ"}แอนิเมชัน\n"รูปแบบที่${
+        index + 1
+      }"\nหรือไม่ ?`,
+      text: `การกระทำนี้จะทำให้ผู้ใช้งาน${
+        stat === true ? "มองเห็น" : "มองไม่เห็น"
+      }แอนิเมชัน`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: stat === true ? "#198754" : "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: stat === true ? "แสดง" : "ซ่อน",
+      cancelButtonText: "ยกเลิก",
+    }).then((result) => {
+      // confirm validate
+      if (result.isConfirmed) {
+        const aniamtionForm = new FormData();
+        aniamtionForm.append("validateStat", stat);
+        axios
+          .post(
+            `http://localhost:3333/animations/validate/${animation._id}`,
+            aniamtionForm,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          )
+          .then(() => {
+            // validate success
+            MySwal.fire({
+              position: "center",
+              title: `${stat === true ? "แสดง" : "ซ่อน"}สำเร็จ!`,
+              text: `"รูปแบบที่${index + 1}"\nถูก${
+                stat === true ? "แสดง" : "ซ่อน"
+              }เรียบร้อย`,
               icon: "success",
             });
             refetch(); // refetch changed data
@@ -265,6 +349,37 @@ const Home = () => {
                               <div className="d-flex justify-content-between align-items-center ps-1">
                                 รูปแบบที่ {index + 1}
                               </div>
+                              <div className="d-flex justify-content-between align-items-center ps-1">
+                                <OverlayTrigger
+                                  trigger="focus"
+                                  placement="top"
+                                  overlay={
+                                    <Popover id={`popover-positioned-top`}>
+                                      {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
+                                      <Popover.Body>
+                                        {animationLogList[index]?.user !==
+                                        undefined
+                                          ? `ผู้ใช้งาน ${animationLogList[index]?.user.username} เป็นคนเปลี่ยนแปลงสถานะแอนิเมชันนี้`
+                                          : "ยังไม่มีผู้เชี่ยวชาญมาตรวจสอบแอนิเมชันนี้"}
+                                      </Popover.Body>
+                                    </Popover>
+                                  }
+                                >
+                                  <Button
+                                    variant={
+                                      animationLogList[index]?.validateStat ===
+                                      true
+                                        ? "success"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {animationLogList[index]?.validateStat ===
+                                    true
+                                      ? "ได้รับการตรวจสอบ"
+                                      : "ไม่ได้รับการตรวจสอบ"}
+                                  </Button>
+                                </OverlayTrigger>
+                              </div>
                               <div className="d-flex justify-content-between align-items-center">
                                 <Link
                                   to={`/words/${wordID}/animations/${animation._id}`}
@@ -273,9 +388,30 @@ const Home = () => {
                                     variant="primary"
                                     className="mx-2 button-class"
                                   >
-                                    แสดง
+                                    เล่น
                                   </Button>
                                 </Link>
+                                <Button
+                                  variant={
+                                    animationLogList[index]?.validateStat ===
+                                    true
+                                      ? "secondary"
+                                      : "success"
+                                  }
+                                  className="mx-2 button-class"
+                                  onClick={() =>
+                                    validateAnimationAlert(
+                                      animation,
+                                      index,
+                                      !animationLogList[index]?.validateStat
+                                    )
+                                  }
+                                >
+                                  {animationLogList[index]?.validateStat ===
+                                  true
+                                    ? "ซ่อน"
+                                    : "แสดง"}
+                                </Button>
                                 <Button
                                   variant="danger"
                                   className="mx-2 button-class"
@@ -306,10 +442,13 @@ const Home = () => {
                     )}
                   </Card>
                 )}
-                <Form.Group controlId="formFileLg" className="mb-3">
-                  <Form.Label>Upload FBX File</Form.Label>
-                  <Form.Control type="file" size="lg" />
-                </Form.Group>
+                {word !== null && (
+                  <UploadAnimation
+                    currentWordID={word._id}
+                    currentWord={word.word}
+                    refetch={refetch}
+                  />
+                )}
               </Card.Body>
             </Card>
           </Col>

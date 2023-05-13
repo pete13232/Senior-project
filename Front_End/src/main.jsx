@@ -12,9 +12,11 @@ import Login from "./Components/Page/Login/Login";
 import "bootstrap/dist/css/bootstrap.min.css";
 import Layout from "./Components/Container/Layout";
 import Signup from "./Components/Page/Signup/Signup";
+import Profile from "./Components/Page/Profile/Profile";
 
 import store from "./Components/redux/store";
 import { Provider } from "react-redux";
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -39,12 +41,16 @@ const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/Signup",
+        path: "/signup",
         element: <Signup />,
       },
       {
-        path: "/Login",
+        path: "/login",
         element: <Login />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
       },
     ],
   },
@@ -54,6 +60,7 @@ const router = createBrowserRouter([
     element: <Navigate to="/" replace={true} />,
   },
 ]);
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <Provider store={store}>
     <RouterProvider router={router} />

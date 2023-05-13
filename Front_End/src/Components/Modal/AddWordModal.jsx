@@ -3,19 +3,19 @@ import { Button, Form, Modal } from "react-bootstrap";
 import { Formik } from "formik";
 import * as yup from "yup";
 import axios from "axios";
-import FBXtoJSON from "../Utils/FBXToJSON";
+import FBXtoJSON from "../Function/FBXToJSON";
 
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-
+import "./add-word-modal-style.css";
 const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
   /*------------------------Form Handling--------------------------- */
 
   const MySwal = withReactContent(Swal);
 
   const schema = yup.object().shape({
-    word: yup.string().required(),
-    description: yup.string().required(),
+    word: yup.string().required("กรุณากรอกคำศัพท์"),
+    description: yup.string().required("กรุณากรอกคำอธิบาย"),
     animation: yup.mixed(),
   });
   const handleClose = () => {
@@ -27,9 +27,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
     const wordForm = new FormData();
     wordForm.append("word", values.word);
     wordForm.append("description", values.description);
-    console.log(
-      "localStorage before add word = " + localStorage.getItem("token")
-    );
+
     axios
       .post("http://localhost:3333/words/add", wordForm, {
         headers: {
@@ -38,23 +36,24 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
       })
       .then((addWordResponse) => {
         if (values.animation instanceof File) {
-          FBXtoJSON({ file: values.animation }).then((result) => {
-            if (result !== undefined) {
-              const blob = new Blob([result], {
-                type: "application/json",
-              });
-              const animationForm = new FormData();
-              animationForm.append(
-                "file",
-                blob,
-                addWordResponse.data._id + "animation_clip"
-              );
-              MySwal.fire({
-                title: "รอสักครู่",
-                text: `กำลังอัปโหลดแอนิเมชัน`,
-                allowOutsideClick: false,
-                didOpen: () => {
-                  MySwal.showLoading();
+          MySwal.fire({
+            title: "รอสักครู่",
+            text: `กำลังอัปโหลดแอนิเมชัน`,
+            allowOutsideClick: false,
+            didOpen: () => {
+              MySwal.showLoading();
+              FBXtoJSON({ file: values.animation }).then((result) => {
+                if (result !== undefined) {
+                  const blob = new Blob([result], {
+                    type: "application/json",
+                  });
+                  const animationForm = new FormData();
+                  animationForm.append(
+                    "file",
+                    blob,
+                    addWordResponse.data._id + "animation_clip.json.gz"
+                    // addWordResponse.data._id + "animation_clip.json"
+                  );
                   axios
                     .post(
                       `http://localhost:3333/animations/add?wordID=${addWordResponse.data._id}`,
@@ -75,13 +74,13 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                         icon: "success",
                       });
                       refetch(); // refetch changed data
-                      console.log(res);
                     })
                     .catch((error) => {
+                      const err = error.message;
                       MySwal.fire({
                         position: "center",
                         title: "เกิดข้อผิดพลาดในการอัปโหลดแอนิเมชัน",
-                        html: error,
+                        html: err,
                         icon: "error",
                         allowOutsideClick: false,
                         allowEscapeKey: false,
@@ -89,17 +88,17 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                       refetch(); // refetch changed data
                       console.error("There was an error!", error);
                     });
-                },
+                } else {
+                  MySwal.fire({
+                    position: "center",
+                    title: "เพิ่มคำสำเร็จ!",
+                    text: `คำว่า\n"${addWordResponse.data.word}"\nถูกเพิ่มเรียบร้อย`,
+                    icon: "success",
+                  });
+                  refetch(); // refetch changed data
+                }
               });
-            } else {
-              MySwal.fire({
-                position: "center",
-                title: "เพิ่มคำสำเร็จ!",
-                text: `คำว่า\n"${addWordResponse.data.word}"\nถูกเพิ่มเรียบร้อย`,
-                icon: "success",
-              });
-              refetch(); // refetch changed data
-            }
+            },
           });
         } else {
           MySwal.fire({
@@ -112,15 +111,15 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
         }
       })
       .catch((error) => {
+        const err = error.message;
         MySwal.fire({
           position: "center",
           title: "เกิดข้อผิดพลาดในการเพิ่มคำ",
-          html: error,
+          html: err,
           icon: "error",
           allowOutsideClick: false,
           allowEscapeKey: false,
         });
-        console.error("There was an error!", error);
       });
   };
   return (
@@ -163,6 +162,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                     onChange={handleChange}
                     isInvalid={!!errors.word}
                   />
+                  <p className="errorMessage">{errors.word}</p>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="addDesc">
                   <Form.Label>Description</Form.Label>
@@ -174,6 +174,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                     onChange={handleChange}
                     isInvalid={!!errors.description}
                   />
+                  <p className="errorMessage">{errors.description}</p>
                 </Form.Group>
                 <Form.Group controlId="addAnimation" className="mb-3">
                   <Form.Label>FBX Animation File</Form.Label>
@@ -185,6 +186,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                       setFieldValue("animation", event.currentTarget.files[0]);
                     }}
                   />
+                  <p className="errorMessage">{errors.file}</p>
                 </Form.Group>
               </Modal.Body>
               <Modal.Footer>
