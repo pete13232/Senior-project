@@ -117,14 +117,14 @@ const deleteWord = async (req, res) => {
   } else {
     
     try {
-      const relatedAnimation = await Animation.deleteMany({ wordID: wordID })
-      const deletedWord = await Word.findByIdAndDelete({ _id: wordID });
-      const animations = await Animation.find({ wordID: wordID }, 'file')
+      const animations = await Animation.find({ wordID: wordID }, 'file') // query for for filename to delete on cloud
       const fileNames = animations.map(animation => {
         const fileURL = animation.file;
         const filename = path.basename(fileURL);
         return filename;
       })
+      const relatedAnimation = await Animation.deleteMany({ wordID: wordID })
+      const deletedWord = await Word.findByIdAndDelete({ _id: wordID });
       for (const fileName of fileNames) {
         if (fileName) {
           const [file] = await bucket.file(fileName).get()
