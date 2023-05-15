@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useImperativeHandle } from "react";
 import * as dat from "dat.gui";
 import model from "./FBX_Loader.js";
 import SceneInit from "./SceneInit.js";
@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import pako from "pako";
-const Canvas = () => {
+const Canvas = ({ sceneRef, clip, setClip }) => {
   const fetchData = async (url, header, data) => {
     const response = await axios.get(url, header, data);
     return response.data;
@@ -18,13 +18,14 @@ const Canvas = () => {
   const MySwal = withReactContent(Swal);
 
   // let mixer = undefined;
-  let init = undefined;
+  let temp_init = undefined;
   // let clips = undefined;
 
   let temp1_mixer = undefined;
   let temp1_clips = undefined;
   let temp2_mixer = undefined;
   let temp2_clips = undefined;
+  const [init, setInit] = useState(undefined);
   const [mixer, setMixer] = useState(undefined);
   const [clips, setClips] = useState([]);
 
@@ -32,7 +33,16 @@ const Canvas = () => {
   const mixerRef = useRef(null);
 
   const [loaded, setLoaded] = useState(false);
-  const [clip, setClip] = useState(undefined);
+
+  useImperativeHandle(sceneRef, () => ({
+    get scene() {
+      return init?.scene;
+    },
+    get controls() {
+      return init?.controls;
+    },
+  }));
+
   const clock = new THREE.Clock();
   let options = {
     position_x: 0,
@@ -45,14 +55,17 @@ const Canvas = () => {
     window.requestAnimationFrame(animate);
     const delta = clock.getDelta();
     if (temp1_mixer) temp1_mixer.update(delta);
-    init.render();
-    init.stats.update();
-    init.controls.update();
-    if (init.scene.children[2] !== undefined) {
-      init.scene.children[2].position.x = options.position_x;
-      init.scene.children[2].position.y = options.position_y;
-      init.scene.children[2].position.z = options.position_z;
-      init.scene.children[2].scale.set(
+    temp_init.render();
+    temp_init.stats.update();
+    temp_init.controls.update();
+
+    if (temp_init.scene.children[2] !== undefined) {
+      // console.log("temp_init.scene.children[2]");
+      // console.log(temp_init.scene.children[2]);
+      temp_init.scene.children[2].position.x = options.position_x;
+      temp_init.scene.children[2].position.y = options.position_y;
+      temp_init.scene.children[2].position.z = options.position_z;
+      temp_init.scene.children[2].scale.set(
         options.scale,
         options.scale,
         options.scale
@@ -61,12 +74,16 @@ const Canvas = () => {
   };
 
   useEffect(() => {
+    console.log("ref in useEffect");
+    console.log(ref);
     if (!loaded && ref) {
-      init = new SceneInit(ref);
-      init.initialize();
+      console.log("Init");
+      temp_init = new SceneInit(ref);
+      temp_init.initialize();
       animate();
-      init.animate();
+      temp_init.animate();
 
+      setInit(temp_init);
       // const gui = new dat.GUI();
       // gui.add(options, "position_x", -20, 20);
       // gui.add(options, "position_y", -50, 50);
@@ -79,10 +96,15 @@ const Canvas = () => {
         didOpen: () => {
           MySwal.showLoading();
           model.then((object) => {
-            init.scene.add(object);
+            object.animations.splice(0);
+            console.log("object");
+            console.log(object);
             let s = 0.28;
             object.scale.set(s, s, s);
             object.position.y = -32;
+            temp_init.scene.add(object);
+
+            setInit(temp_init);
             temp1_mixer = new THREE.AnimationMixer(object);
             setMixer(temp1_mixer);
             mixerRef.current = temp1_mixer;
@@ -90,9 +112,9 @@ const Canvas = () => {
             temp1_clips = object.animations.map((animation) => {
               return temp1_mixer.clipAction(animation);
             });
-
             temp1_clips.splice(0);
             setClips(temp1_clips);
+
             MySwal.close();
           });
         },
@@ -143,14 +165,14 @@ const Canvas = () => {
                     temp2_clips.splice(0);
                   }
 
-                  temp2_clips.push(
-                    temp2_mixer.clipAction(
-                      THREE.AnimationClip.parse(JSON.parse(decompressedClip))
-                    )
+                  const animationClip = THREE.AnimationClip.parse(
+                    JSON.parse(decompressedClip)
                   );
+                  temp2_clips.push(temp2_mixer.clipAction(animationClip));
                   setClips(temp2_clips);
 
                   temp2_clips[0].play();
+                  setClip(animationClip);
                   MySwal.close();
                   t1 = performance.now();
                   console.log(`myFunction took ${t1 - t0} milliseconds.`);
@@ -253,9 +275,16 @@ const Canvas = () => {
           temp2_clips.splice(0);
         }
         setClips(temp2_clips);
+        setClip(undefined);
       }
     }
   }, [animationID, mixer, clips]);
+
+  useEffect(() => {
+    console.log("ref");
+    console.log(ref);
+  }, [ref]);
+
   const div = <div ref={ref} />;
   return div;
 };

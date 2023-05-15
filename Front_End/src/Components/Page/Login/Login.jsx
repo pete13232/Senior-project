@@ -72,7 +72,7 @@ const Login = () => {
                 <Form.Label>Username</Form.Label>
                 <Form.Control
                   type="text"
-                  placeholder="Enter username"
+                  placeholder="กรอกยูสเซอร์เนม"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
@@ -81,7 +81,7 @@ const Login = () => {
                 <Form.Label>Password</Form.Label>
                 <Form.Control
                   type="password"
-                  placeholder="Password"
+                  placeholder="กรอกรหัสผ่าน"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />

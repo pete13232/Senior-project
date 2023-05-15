@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Canvas from "../../Animation/Canvas";
 import {
   Card,
@@ -19,7 +19,7 @@ import {
   FaPlus,
   FaEdit,
 } from "react-icons/fa";
-
+import { BiDownload } from "react-icons/bi";
 import "./home-style.css";
 
 import axios from "axios";
@@ -30,7 +30,8 @@ import EditWordModal from "../../Modal/EditWordModal";
 import UploadAnimation from "../../SubComponents/UploadAnimation";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-
+import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
+import { useSelector } from "react-redux";
 const Home = () => {
   const MySwal = withReactContent(Swal);
 
@@ -45,7 +46,12 @@ const Home = () => {
   const [word, setWord] = useState(null);
   const [animationList, setAnimationList] = useState([]);
   const [animationLogList, setAnimationLogList] = useState([]);
-
+  const [cameraControls, setCameraControls] = useState(undefined);
+  const [sceneObject, setSceneObject] = useState(undefined);
+  const [loaded, setLoaded] = useState(false);
+  const [clip, setClip] = useState(undefined);
+  const sceneRef = useRef(undefined);
+  const userObject = useSelector((state) => state.user.userObject);
   const fetchWordList = () => {
     fetchData("http://localhost:3333/words")
       .then((res) => {
@@ -68,6 +74,8 @@ const Home = () => {
   const fetchAnimationList = () => {
     fetchData(`http://localhost:3333/animations/get?wordID=${wordID}`)
       .then((res) => {
+        console.log("Animation List");
+        console.log(res.data);
         setAnimationList(res.data);
         Promise.all(
           res.data.map((animation) =>
@@ -87,6 +95,8 @@ const Home = () => {
               })
           )
         ).then((results) => {
+          console.log("Animation Log");
+          console.log(results);
           setAnimationLogList(results);
         });
       })
@@ -115,7 +125,6 @@ const Home = () => {
       setAnimationList([]);
     }
   }, [wordID]);
-
 
   const [showAddWord, setShowAddWord] = useState(false);
   const [showEditWord, setShowEditWord] = useState(false);
@@ -275,6 +284,67 @@ const Home = () => {
       }
     });
   };
+
+  const handleDownloadGLB = () => {
+    const exporter = new GLTFExporter();
+    const modelToExport = sceneObject?.children[2];
+    exporter.parse(
+      modelToExport,
+
+      function (result) {
+        const blob = new Blob([result], {
+          type: "application/octet-stream",
+        });
+        console.log("blob");
+        console.log(blob);
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.style.display = "none";
+        link.href = url;
+        link.setAttribute("download", "model.glb");
+        document.body.appendChild(link);
+        link.click();
+        URL.revokeObjectURL(url);
+      },
+      function (error) {
+        console.log("An error happened" + error);
+        MySwal.fire({
+          position: "center",
+          title: "เกิดข้อผิดพลาด ไม่สามารถดาวน์โหลดได้",
+          html: "กรุณาเลือกแอนิเมชันก่อนดาวน์โหลด",
+          icon: "error",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+      },
+      {
+        binary: true,
+        animations: [clip],
+      }
+    );
+
+    // Update the Canvas component's state to trigger a rerender
+    // sceneRef.current.setShouldRender(false);
+  };
+
+  const handleDownloadJSON = () => {};
+
+  useEffect(() => {
+    if (
+      sceneRef.current.scene !== undefined &&
+      sceneRef.current.controls !== undefined
+    ) {
+      setSceneObject(sceneRef.current?.scene);
+      setCameraControls(sceneRef.current?.controls);
+      console.log("sceneRef");
+      console.log(sceneRef);
+      console.log(sceneRef.current);
+      console.log(sceneRef.current.scene);
+
+      console.log(sceneRef.current.controls);
+    }
+  }, [sceneRef?.current?.scene, sceneRef?.current?.controls]);
+
   return (
     <>
       <Container fluid className="px-5">
@@ -286,18 +356,58 @@ const Home = () => {
                   className="pa-4"
                   style={{ position: "relative", borderStyle: "groove" }}
                 >
-                  <Canvas />
+                  <Canvas
+                    sceneRef={sceneRef}
+                    loaded={loaded}
+                    setLoaded={setLoaded}
+                    clip={clip}
+                    setClip={setClip}
+                  />
                 </div>
-                <div className="d-flex justify-content-center align-items-center pt-3">
-                  <Button variant="primary" className="mx-2">
-                    <FaFastBackward color="white" size={16} />
+                <div className="d-flex justify-content-between  align-items-center pt-3 position-relative">
+                  <Button
+                    variant="primary"
+                    className="mx-2 "
+                    onClick={() => {
+                      cameraControls.reset();
+                    }}
+                  >
+                    รีเซ็ทมุมกล้อง
                   </Button>
-                  <Button variant="primary" className="mx-2">
-                    <FaPlay color="white" size={16} />
-                  </Button>
-                  <Button variant="primary" className="mx-2 ">
-                    <FaFastForward color="white" size={16} />
-                  </Button>
+                  <div className="d-flex justify-content-center align-items-center pt-3 position-absolute top-50 start-50 translate-middle icon-container">
+                    <Button variant="primary" className="mx-2">
+                      <FaFastBackward color="white" size={16} />
+                    </Button>
+                    <Button variant="primary" className="mx-2">
+                      <FaPlay color="white" size={16} />
+                    </Button>
+                    <Button variant="primary" className="mx-2 ">
+                      <FaFastForward color="white" size={16} />
+                    </Button>
+                  </div>
+                  <div className="d-flex justify-content-between  align-items-center">
+                    {" "}
+                    <Button
+                      variant="primary"
+                      className="d-flex justify-content-center align-items-center mx-2 px-2 py-1"
+                      onClick={() => {
+                        handleDownloadGLB();
+                      }}
+                    >
+                      <BiDownload color="white" size={28} />
+                      <div>glb</div>
+                    </Button>
+                    <Button
+                      variant="primary"
+                      className="d-flex justify-content-center align-items-center mx-2 px-2 py-1"
+                      onClick={() => {
+                        handleDownloadJSON();
+                      }}
+                    >
+                      <BiDownload color="white" size={28} />
+                      <div>JSON</div>
+                    </Button>
+                  </div>
                 </div>
               </Card.Body>
             </Card>
@@ -310,7 +420,7 @@ const Home = () => {
                 <div className="d-flex align-items-center card-header-text">
                   รายละเอียด
                 </div>
-                {word !== null && (
+                {word !== null && userObject !== null && (
                   <Button
                     className="d-flex align-items-center"
                     onClick={() => setShowEditWord(true)}
@@ -339,92 +449,125 @@ const Home = () => {
 
                     {animationList.length !== 0 ? (
                       <ListGroup as="ol" variant="flush">
-                        {animationList.map((animation, index) => (
-                          <ListGroup.Item
-                            as="ul"
-                            className="d-flex align-items-center"
-                            key={index}
-                          >
-                            <div className="d-flex flex-fill  justify-content-between align-items-center">
-                              <div className="d-flex justify-content-between align-items-center ps-1">
-                                รูปแบบที่ {index + 1}
-                              </div>
-                              <div className="d-flex justify-content-between align-items-center ps-1">
-                                <OverlayTrigger
-                                  trigger="focus"
-                                  placement="top"
-                                  overlay={
-                                    <Popover id={`popover-positioned-top`}>
-                                      {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
-                                      <Popover.Body>
-                                        {animationLogList[index]?.user !==
-                                        undefined
-                                          ? `ผู้ใช้งาน ${animationLogList[index]?.user.username} เป็นคนเปลี่ยนแปลงสถานะแอนิเมชันนี้`
-                                          : "ยังไม่มีผู้เชี่ยวชาญมาตรวจสอบแอนิเมชันนี้"}
-                                      </Popover.Body>
-                                    </Popover>
-                                  }
-                                >
-                                  <Button
-                                    variant={
-                                      animationLogList[index]?.validateStat ===
+                        {userObject !== null
+                          ? animationList.map((animation, index) => (
+                              <ListGroup.Item
+                                as="ul"
+                                className="d-flex align-items-center"
+                                key={index}
+                              >
+                                <div className="d-flex flex-fill  justify-content-between align-items-center">
+                                  <div className="d-flex justify-content-between align-items-center ps-1">
+                                    รูปแบบที่ {index + 1}
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center ps-1">
+                                    <OverlayTrigger
+                                      trigger="focus"
+                                      placement="top"
+                                      overlay={
+                                        <Popover id={`popover-positioned-top`}>
+                                          {/* <Popover.Header as="h3">{`Popover top`}</Popover.Header> */}
+                                          <Popover.Body>
+                                            {animationLogList[index]?.user !==
+                                            undefined
+                                              ? `ผู้ใช้งาน ${animationLogList[index]?.user.username} เป็นคนเปลี่ยนแปลงสถานะแอนิเมชันนี้`
+                                              : "ยังไม่มีผู้เชี่ยวชาญมาตรวจสอบแอนิเมชันนี้"}
+                                          </Popover.Body>
+                                        </Popover>
+                                      }
+                                    >
+                                      <Button
+                                        variant={
+                                          animationLogList[index]
+                                            ?.validateStat === true
+                                            ? "success"
+                                            : "secondary"
+                                        }
+                                      >
+                                        {animationLogList[index]
+                                          ?.validateStat === true
+                                          ? "ได้รับการตรวจสอบ"
+                                          : "ไม่ได้รับการตรวจสอบ"}
+                                      </Button>
+                                    </OverlayTrigger>
+                                  </div>
+                                  <div className="d-flex justify-content-between align-items-center">
+                                    <Link
+                                      to={`/words/${wordID}/animations/${animation._id}`}
+                                    >
+                                      <Button
+                                        variant="primary"
+                                        className="mx-2 button-class"
+                                      >
+                                        เล่น
+                                      </Button>
+                                    </Link>
+                                    <Button
+                                      variant={
+                                        animationLogList[index]
+                                          ?.validateStat === true
+                                          ? "secondary"
+                                          : "success"
+                                      }
+                                      className="mx-2 button-class"
+                                      onClick={() =>
+                                        validateAnimationAlert(
+                                          animation,
+                                          index,
+                                          !animationLogList[index]?.validateStat
+                                        )
+                                      }
+                                    >
+                                      {animationLogList[index]?.validateStat ===
                                       true
-                                        ? "success"
-                                        : "secondary"
-                                    }
-                                  >
-                                    {animationLogList[index]?.validateStat ===
-                                    true
-                                      ? "ได้รับการตรวจสอบ"
-                                      : "ไม่ได้รับการตรวจสอบ"}
-                                  </Button>
-                                </OverlayTrigger>
-                              </div>
-                              <div className="d-flex justify-content-between align-items-center">
-                                <Link
-                                  to={`/words/${wordID}/animations/${animation._id}`}
+                                        ? "ซ่อน"
+                                        : "แสดง"}
+                                    </Button>
+                                    {userObject?.role === "admin" && (
+                                      <Button
+                                        variant="danger"
+                                        className="mx-2 button-class"
+                                        onClick={() =>
+                                          deleteAnimationAlert(animation, index)
+                                        }
+                                      >
+                                        ลบ
+                                      </Button>
+                                    )}
+                                  </div>
+                                </div>
+                              </ListGroup.Item>
+                            ))
+                          : animationList
+                              .filter(
+                                (animation, index) =>
+                                  animationLogList[index]?.validateStat === true
+                              )
+                              .map((animation, index) => (
+                                <ListGroup.Item
+                                  as="ul"
+                                  className="d-flex align-items-center"
+                                  key={index}
                                 >
-                                  <Button
-                                    variant="primary"
-                                    className="mx-2 button-class"
-                                  >
-                                    เล่น
-                                  </Button>
-                                </Link>
-                                <Button
-                                  variant={
-                                    animationLogList[index]?.validateStat ===
-                                    true
-                                      ? "secondary"
-                                      : "success"
-                                  }
-                                  className="mx-2 button-class"
-                                  onClick={() =>
-                                    validateAnimationAlert(
-                                      animation,
-                                      index,
-                                      !animationLogList[index]?.validateStat
-                                    )
-                                  }
-                                >
-                                  {animationLogList[index]?.validateStat ===
-                                  true
-                                    ? "ซ่อน"
-                                    : "แสดง"}
-                                </Button>
-                                <Button
-                                  variant="danger"
-                                  className="mx-2 button-class"
-                                  onClick={() =>
-                                    deleteAnimationAlert(animation, index)
-                                  }
-                                >
-                                  ลบ
-                                </Button>
-                              </div>
-                            </div>
-                          </ListGroup.Item>
-                        ))}
+                                  <div className="d-flex flex-fill  justify-content-between align-items-center">
+                                    <div className="d-flex justify-content-between align-items-center ps-1">
+                                      รูปแบบที่ {index + 1}
+                                    </div>
+                                    <div className="d-flex justify-content-between align-items-center">
+                                      <Link
+                                        to={`/words/${wordID}/animations/${animation._id}`}
+                                      >
+                                        <Button
+                                          variant="primary"
+                                          className="mx-2 button-class"
+                                        >
+                                          เล่น
+                                        </Button>
+                                      </Link>
+                                    </div>
+                                  </div>
+                                </ListGroup.Item>
+                              ))}
                       </ListGroup>
                     ) : (
                       <ListGroup as="ol" variant="flush">
@@ -442,7 +585,7 @@ const Home = () => {
                     )}
                   </Card>
                 )}
-                {word !== null && (
+                {word !== null && userObject?.role === "admin" && (
                   <UploadAnimation
                     currentWordID={word._id}
                     currentWord={word.word}
@@ -462,12 +605,14 @@ const Home = () => {
                 <div className="d-flex align-items-center card-header-text">
                   คำศัพท์
                 </div>
-                <Button
-                  className="d-flex align-items-center"
-                  onClick={() => setShowAddWord(true)}
-                >
-                  <FaPlus color="white" size={16} />
-                </Button>
+                {userObject?.role === "admin" && (
+                  <Button
+                    className="d-flex align-items-center"
+                    onClick={() => setShowAddWord(true)}
+                  >
+                    <FaPlus color="white" size={16} />
+                  </Button>
+                )}
               </Card.Header>
               <ListGroup as="ol" numbered variant="flush">
                 {wordList.map((word) => (
@@ -489,13 +634,15 @@ const Home = () => {
                             เลือก
                           </Button>
                         </Link>
-                        <Button
-                          variant="danger"
-                          className="mx-1 button-class"
-                          onClick={() => deleteWordAlert(word)}
-                        >
-                          ลบ
-                        </Button>
+                        {userObject?.role === "admin" && (
+                          <Button
+                            variant="danger"
+                            className="mx-1 button-class"
+                            onClick={() => deleteWordAlert(word)}
+                          >
+                            ลบ
+                          </Button>
+                        )}
                       </div>
                     </div>
                   </ListGroup.Item>
