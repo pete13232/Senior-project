@@ -149,15 +149,15 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
           }) => (
             <Form onSubmit={handleSubmit} id="addWordForm">
               <Modal.Header closeButton>
-                <Modal.Title>Add Word</Modal.Title>
+                <Modal.Title>เพิ่มคำศัพท์</Modal.Title>
               </Modal.Header>
               <Modal.Body>
                 <Form.Group className="mb-3" controlId="addWord">
-                  <Form.Label>Word</Form.Label>
+                  <Form.Label>คำศัพท์</Form.Label>
                   <Form.Control
                     name="word"
                     type="text"
-                    placeholder="Enter word"
+                    placeholder="คำศัพท์"
                     autoFocus
                     onChange={handleChange}
                     isInvalid={!!errors.word}
@@ -165,12 +165,12 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                   <p className="errorMessage">{errors.word}</p>
                 </Form.Group>
                 <Form.Group className="mb-3" controlId="addDesc">
-                  <Form.Label>Description</Form.Label>
+                  <Form.Label>คำอธิบาย</Form.Label>
                   <Form.Control
                     name="description"
                     as="textarea"
                     rows={3}
-                    placeholder="Enter description"
+                    placeholder="คำอธิบาย"
                     onChange={handleChange}
                     isInvalid={!!errors.description}
                   />
@@ -191,7 +191,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="secondary" onClick={() => handleClose()}>
-                  Close
+                  ยกเลิก
                 </Button>
                 <Button
                   variant="primary"
@@ -200,7 +200,7 @@ const AddWordModal = ({ showAddWord, setShowAddWord, refetch }) => {
                   }}
                   type="submit"
                 >
-                  Add
+                  เพิ่ม
                 </Button>
               </Modal.Footer>
             </Form>

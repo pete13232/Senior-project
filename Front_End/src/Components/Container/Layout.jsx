@@ -28,7 +28,6 @@ const Layout = () => {
       localStorage.removeItem("token");
       window.dispatchEvent(new Event("storage")); // update storage after set item
       dispatch(setUser(null));
-      // navigate("/");
     } else {
       if (userObject === null) {
         console.log("userObject === null");

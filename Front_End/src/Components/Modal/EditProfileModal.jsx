@@ -5,14 +5,7 @@ import * as yup from "yup";
 import axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-const EditWordModal = ({
-  showEditWord,
-  setShowEditWord,
-  currentWordID,
-  currentWord,
-  currentDesc,
-  refetch,
-}) => {
+const EditWordModal = ({ showEditProfile, setShowEditProfile, refetch }) => {
   const MySwal = withReactContent(Swal);
   /*------------------------Form Handling--------------------------- */
 
@@ -21,51 +14,51 @@ const EditWordModal = ({
     description: yup.string(),
   });
   const handleClose = () => {
-    setShowEditWord(false);
-    document.getElementById("editWordForm").reset();
+    setShowEditProfile(false);
+    document.getElementById("editProfileForm").reset();
   };
 
   const submitEditWord = (values) => {
-    const wordForm = new FormData();
-    if (values.word.length > 0) {
-      wordForm.append("word", values.word);
-    }
-    if (values.description.length > 0) {
-      wordForm.append("description", values.description);
-    }
-    if (values.word.length > 0 || values.description.length > 0) {
-      axios
-        .patch(`http://localhost:3333/words/${currentWordID}`, wordForm, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        })
-        .then((res) => {
-          MySwal.fire({
-            position: "center",
-            title: "แก้ไขสำเร็จ!",
-            text: `คำว่า\n"${currentWord}"\nถูกแก้ไขเรียบร้อย`,
-            icon: "success",
-          });
-          refetch(); // refetch changed data
-        })
-        .catch((error) => {
-          MySwal.fire({
-            position: "center",
-            title: "เกิดข้อผิดพลาด",
-            html: error,
-            icon: "error",
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-          });
-          console.error("There was an error!", error);
-        });
-    }
+    // const wordForm = new FormData();
+    // if (values.word.length > 0) {
+    //   wordForm.append("word", values.word);
+    // }
+    // if (values.description.length > 0) {
+    //   wordForm.append("description", values.description);
+    // }
+    // if (values.word.length > 0 || values.description.length > 0) {
+    //   axios
+    //     .patch(`http://localhost:3333/words/${currentWordID}`, wordForm, {
+    //       headers: {
+    //         Authorization: `Bearer ${localStorage.getItem("token")}`,
+    //       },
+    //     })
+    //     .then((res) => {
+    //       MySwal.fire({
+    //         position: "center",
+    //         title: "แก้ไขสำเร็จ!",
+    //         text: `คำว่า\n"${currentWord}"\nถูกแก้ไขเรียบร้อย`,
+    //         icon: "success",
+    //       });
+    //       refetch(); // refetch changed data
+    //     })
+    //     .catch((error) => {
+    //       MySwal.fire({
+    //         position: "center",
+    //         title: "เกิดข้อผิดพลาด",
+    //         html: error,
+    //         icon: "error",
+    //         allowOutsideClick: false,
+    //         allowEscapeKey: false,
+    //       });
+    //       console.error("There was an error!", error);
+    //     });
+    // }
   };
   return (
     <>
       {/*-------------------------------- Edit Word Modal------------------------------------ */}
-      <Modal centered show={showEditWord} onHide={() => handleClose()}>
+      <Modal centered show={showEditProfile} onHide={() => handleClose()}>
         <Formik
           initialValues={{
             word: "",
@@ -86,7 +79,7 @@ const EditWordModal = ({
             isValid,
             errors,
           }) => (
-            <Form onSubmit={handleSubmit} id="editWordForm">
+            <Form onSubmit={handleSubmit} id="editProfileForm">
               <Modal.Header closeButton>
                 <Modal.Title>แก้ไขคำศัพท์</Modal.Title>
               </Modal.Header>
@@ -96,7 +89,7 @@ const EditWordModal = ({
                   <Form.Control
                     name="word"
                     type="text"
-                    placeholder={currentWord}
+                    placeholder={"currentWord"}
                     autoFocus
                     onChange={handleChange}
                     isInvalid={!!errors.word}
@@ -108,7 +101,7 @@ const EditWordModal = ({
                     name="description"
                     as="textarea"
                     rows={3}
-                    placeholder={currentDesc}
+                    placeholder={"currentDesc"}
                     onChange={handleChange}
                     isInvalid={!!errors.description}
                   />

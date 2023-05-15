@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
-import { Card, Col, Row, Container, ListGroup, Table } from "react-bootstrap";
+import {
+  Card,
+  Col,
+  Row,
+  Container,
+  ListGroup,
+  Table,
+  Button,
+} from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import "./profile-style.css";
 import axios from "axios";
 
 import { useSelector } from "react-redux";
+import { FaEdit } from "react-icons/fa";
 
+import EditProfileModal from "./../../Modal/EditProfileModal";
 const Profile = () => {
   const fetchData = async (url, header) => {
     const response = await axios.get(url, header);
@@ -16,6 +26,7 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const [validateLogList, setValidateLogList] = useState([]);
+  const [showEditProfile, setShowEditProfile] = useState(false);
   // dispatch(setUser(res.data.newUser));
 
   useEffect(() => {
@@ -25,7 +36,10 @@ const Profile = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       }).then((res) => {
-        setValidateLogList(res.userLog);
+        const filteredUserLog = res.userLog.filter((log) => {
+          return log.animationID !== null;
+        });
+        setValidateLogList(filteredUserLog);
       });
     } else {
       navigate("/login");
@@ -42,8 +56,20 @@ const Profile = () => {
         <Row className="justify-content-center">
           <Col md={5}>
             <Card className="my-3">
-              <Card.Header as="h3" className="profile-card-header ">
-                Profile
+              <Card.Header
+                as="h3"
+                className="d-flex justify-content-between
+                align-items-center profile-card-header "
+              >
+                <div className="d-flex align-items-center card-header-text">
+                  Profile
+                </div>
+                <Button
+                  className="d-flex align-items-center"
+                  onClick={() => setShowEditProfile(true)}
+                >
+                  <FaEdit color="white" size={16} />
+                </Button>
               </Card.Header>
               <Card.Body>
                 <div className="d-flex  justify-content-start align-items-center">
@@ -92,9 +118,9 @@ const Profile = () => {
                 </thead>
                 <tbody>
                   {validateLogList.map((log, index) => (
-                    <tr>
+                    <tr key={index}>
                       <td>{index + 1}</td>
-                      <td>{log.animationID?.wordID.word}</td>
+                      <td>{log.animationID?.wordID?.word}</td>
                       <td>{log.animationID?._id}</td>
                       <td>
                         {log.validateStat === true ? "อนุมัติ" : "ไม่อนุมัติ"}
@@ -106,6 +132,10 @@ const Profile = () => {
             </Card>
           </Col>
         </Row>
+        <EditProfileModal
+          showEditProfile={showEditProfile}
+          setShowEditProfile={setShowEditProfile}
+        />
       </Container>
     </div>
   );
