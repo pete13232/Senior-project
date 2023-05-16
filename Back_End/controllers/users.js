@@ -1,8 +1,19 @@
 const { default: mongoose } = require("mongoose");
 const User = require("../models/User");
 const ValidateLog = require("../models/ValidateLog");
-const { populate } = require("../models/Word");
+const { populate, update, create } = require("../models/Word");
 const upload = require('../middleware/multer');
+const jwt = require('jsonwebtoken');
+
+
+// Create Token
+const maxAge = 3 * 24 * 60 * 60; // 3 days
+const createToken = (user) => {
+    return jwt.sign({ user }, "tsl project secret", {
+        expiresIn: maxAge,
+    });
+};
+
 
 // Get all user
 const getUser = async (req, res) => {
@@ -18,7 +29,7 @@ const getUser = async (req, res) => {
 const createUser = async (req, res) => {
     await upload.uploadLocalMiddleware(req, res)
     const { username, password, firstName, lastName, role } = req.body
-    const newUser = new User({username, password, firstName, lastName, role})
+    const newUser = new User({ username, password, firstName, lastName, role })
 
     try {
         await newUser.save()
@@ -67,7 +78,8 @@ const editUser = async (req, res) => {
                 { new: true }
             );
             if (updatedUser) {
-                res.status(200).json(updatedUser);
+                const token = createToken(updatedUser)
+                res.status(200).json({token});
             } else {
                 res.status(200).json("No user edited");
             }
