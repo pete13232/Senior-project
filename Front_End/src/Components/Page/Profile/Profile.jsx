@@ -8,7 +8,7 @@ import {
   Table,
   Button,
 } from "react-bootstrap";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./profile-style.css";
 import axios from "axios";
 
@@ -29,18 +29,25 @@ const Profile = () => {
   const [showEditProfile, setShowEditProfile] = useState(false);
   // dispatch(setUser(res.data.newUser));
 
+  const fetchLog = () => {
+    fetchData(`http://localhost:3333/users/validateLog/${userObject._id}`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    }).then((res) => {
+      const filteredUserLog = res.userLog.filter((log) => {
+        return log.animationID !== null;
+      });
+      setValidateLogList(filteredUserLog);
+    });
+  };
+
+  const refetch = () => {
+    fetchLog();
+  };
   useEffect(() => {
     if (userObject !== null) {
-      fetchData(`http://localhost:3333/users/validateLog/${userObject._id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      }).then((res) => {
-        const filteredUserLog = res.userLog.filter((log) => {
-          return log.animationID !== null;
-        });
-        setValidateLogList(filteredUserLog);
-      });
+      fetchLog();
     } else {
       navigate("/login");
     }
@@ -72,30 +79,53 @@ const Profile = () => {
                 </Button>
               </Card.Header>
               <Card.Body>
-                <div className="d-flex  justify-content-start align-items-center">
-                  <div className="d-flex my-3">
-                    <div className="mx-4 ">First Name :</div>{" "}
-                    <div className="mx-4">{userObject?.firstName}</div>
-                  </div>
-                </div>
-                <div className="d-flex  justify-content-start align-items-center">
-                  <div className="d-flex my-3">
-                    <div className="mx-4">Last Name :</div>{" "}
-                    <div className="mx-4">{userObject?.lastName}</div>
-                  </div>
-                </div>
-                <div className="d-flex  justify-content-start align-items-center">
-                  <div className="d-flex my-3">
-                    <div className="mx-4">Username :</div>{" "}
-                    <div className="mx-4">{userObject?.username}</div>
-                  </div>
-                </div>
-                <div className="d-flex  justify-content-start align-items-center">
-                  <div className="d-flex my-3">
-                    <div className="mx-4">Role :</div>{" "}
-                    <div className="mx-4">{userObject?.role}</div>
-                  </div>
-                </div>
+                <Row>
+                  <Col xs={5}>
+                    {" "}
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4">Username :</div>
+                      </div>
+                    </div>
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4 ">ชื่อ :</div>{" "}
+                      </div>
+                    </div>
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4">นามสกุล :</div>{" "}
+                      </div>
+                    </div>
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4">ตำแหน่ง :</div>{" "}
+                      </div>
+                    </div>
+                  </Col>
+                  <Col xs={7}>
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4">{userObject?.username}</div>
+                      </div>
+                    </div>
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4">{userObject?.firstName}</div>
+                      </div>
+                    </div>
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4">{userObject?.lastName}</div>
+                      </div>
+                    </div>
+                    <div className="d-flex  justify-content-start align-items-center">
+                      <div className="d-flex my-3">
+                        <div className="mx-4">{userObject?.role}</div>
+                      </div>
+                    </div>
+                  </Col>
+                </Row>
               </Card.Body>
             </Card>
           </Col>
@@ -135,6 +165,7 @@ const Profile = () => {
         <EditProfileModal
           showEditProfile={showEditProfile}
           setShowEditProfile={setShowEditProfile}
+          refetch={refetch}
         />
       </Container>
     </div>

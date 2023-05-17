@@ -32,13 +32,14 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
 import { useSelector } from "react-redux";
+import pako from "pako";
 const Home = () => {
   const MySwal = withReactContent(Swal);
 
   const { wordID, animationID } = useParams();
 
-  const fetchData = async (url) => {
-    const response = await axios.get(url);
+  const fetchData = async (url, header) => {
+    const response = await axios.get(url, header);
     return response.data;
   };
 
@@ -327,7 +328,42 @@ const Home = () => {
     // sceneRef.current.setShouldRender(false);
   };
 
-  const handleDownloadJSON = () => {};
+  const handleDownloadJSON = () => {
+    fetchData(`http://localhost:3333/animations/${animationID}`)
+      .then((resAnimation) => {
+        return fetchData(resAnimation.data.file, {
+          responseType: "arraybuffer",
+        });
+      })
+      .then((responseClip) => {
+        const compressedClip = new Blob([responseClip]);
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const uint8array = new Uint8Array(reader.result);
+
+          // Inflate the compressed data using pako
+          const decompressedClip = pako.inflate(uint8array, {
+            to: "string",
+          });
+
+          const blob = new Blob([decompressedClip], {
+            type: "application/json",
+          });
+          console.log("blob");
+          console.log(blob);
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.style.display = "none";
+          link.href = url;
+          link.setAttribute("download", "model.json");
+          document.body.appendChild(link);
+          link.click();
+          URL.revokeObjectURL(url);
+        };
+        reader.readAsArrayBuffer(compressedClip);
+      });
+  };
 
   useEffect(() => {
     if (
