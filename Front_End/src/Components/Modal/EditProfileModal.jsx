@@ -5,13 +5,25 @@ import * as yup from "yup";
 import axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import "./edit-profile-modal-style.css";
+import { useSelector, useDispatch } from "react-redux";
+import { setUser } from ".././redux/userReducer";
+import jwt_decode from "jwt-decode";
+
 const EditWordModal = ({ showEditProfile, setShowEditProfile, refetch }) => {
   const MySwal = withReactContent(Swal);
+  const userObject = useSelector((state) => state.user.userObject);
+  const dispatch = useDispatch();
+  // dispatch(setUser(res.data.newUser));
   /*------------------------Form Handling--------------------------- */
 
   const schema = yup.object().shape({
-    word: yup.string(),
-    description: yup.string(),
+    firstname: yup.string(),
+    lastname: yup.string(),
+    password: yup.string().min(8, "พาสเวิร์ดต้องมีความยาวมากกว่า 8 ตัวอักษร"),
+    confirmPassword: yup
+      .string()
+      .oneOf([yup.ref("password"), null], "พาสเวิร์ดไม่ตรงกัน"),
   });
   const handleClose = () => {
     setShowEditProfile(false);
@@ -19,41 +31,67 @@ const EditWordModal = ({ showEditProfile, setShowEditProfile, refetch }) => {
   };
 
   const submitEditWord = (values) => {
-    // const wordForm = new FormData();
-    // if (values.word.length > 0) {
-    //   wordForm.append("word", values.word);
-    // }
-    // if (values.description.length > 0) {
-    //   wordForm.append("description", values.description);
-    // }
-    // if (values.word.length > 0 || values.description.length > 0) {
-    //   axios
-    //     .patch(`http://localhost:3333/words/${currentWordID}`, wordForm, {
-    //       headers: {
-    //         Authorization: `Bearer ${localStorage.getItem("token")}`,
-    //       },
-    //     })
-    //     .then((res) => {
-    //       MySwal.fire({
-    //         position: "center",
-    //         title: "แก้ไขสำเร็จ!",
-    //         text: `คำว่า\n"${currentWord}"\nถูกแก้ไขเรียบร้อย`,
-    //         icon: "success",
-    //       });
-    //       refetch(); // refetch changed data
-    //     })
-    //     .catch((error) => {
-    //       MySwal.fire({
-    //         position: "center",
-    //         title: "เกิดข้อผิดพลาด",
-    //         html: error,
-    //         icon: "error",
-    //         allowOutsideClick: false,
-    //         allowEscapeKey: false,
-    //       });
-    //       console.error("There was an error!", error);
-    //     });
-    // }
+    const userForm = new FormData();
+    if (values.firstName?.length > 0) {
+      userForm.append("firstName", values.firstName);
+    }
+
+    if (values.lastName?.length > 0) {
+      userForm.append("lastName", values.lastName);
+    }
+    if (values.password?.length >= 8) {
+      if (values.password === values.confirmPassword) {
+        userForm.append("password", values.password);
+      } else {
+        MySwal.fire({
+          position: "center",
+          title: "พาสเวิร์ดไม่ตรงกัน",
+          icon: "error",
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+        });
+        return 0;
+      }
+    }
+    if (
+      values.firstName?.length > 0 ||
+      values.lastName?.length > 0 ||
+      values.password?.length >= 8
+    ) {
+      axios
+        .patch(`http://localhost:3333/users/${userObject?._id}`, userForm, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((editRes) => {
+          console.log(editRes.data.token);
+          localStorage.setItem("token", editRes.data.token);
+          window.dispatchEvent(new Event("storage")); // update storage after set item
+          const decodedToken = jwt_decode(editRes.data.token);
+          delete decodedToken.user.password;
+          console.log(decodedToken);
+          dispatch(setUser(decodedToken.user));
+          MySwal.fire({
+            position: "center",
+            title: "แก้ไขสำเร็จ!",
+            text: `ข้อมูลถูกแก้ไขเรียบร้อย`,
+            icon: "success",
+          });
+          refetch();
+        })
+        .catch((error) => {
+          MySwal.fire({
+            position: "center",
+            title: "เกิดข้อผิดพลาด",
+            html: error,
+            icon: "error",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+          });
+          console.error("There was an error!", error);
+        });
+    }
   };
   return (
     <>
@@ -61,8 +99,10 @@ const EditWordModal = ({ showEditProfile, setShowEditProfile, refetch }) => {
       <Modal centered show={showEditProfile} onHide={() => handleClose()}>
         <Formik
           initialValues={{
-            word: "",
-            description: "",
+            firstname: "",
+            lastName: "",
+            password: "",
+            confirmPassword: "",
           }}
           validationSchema={schema}
           onSubmit={(values) => {
@@ -81,31 +121,57 @@ const EditWordModal = ({ showEditProfile, setShowEditProfile, refetch }) => {
           }) => (
             <Form onSubmit={handleSubmit} id="editProfileForm">
               <Modal.Header closeButton>
-                <Modal.Title>แก้ไขคำศัพท์</Modal.Title>
+                <Modal.Title>แก้ไขโปรไฟล์</Modal.Title>
               </Modal.Header>
               <Modal.Body>
-                <Form.Group className="mb-3" controlId="addWord">
-                  <Form.Label>คำศัพท์</Form.Label>
+                <Form.Group className="mb-3" controlId="editFirstName">
+                  <Form.Label>ชื่อ</Form.Label>
+                  <Form.Control
+                    name="firstName"
+                    type="text"
+                    placeholder={userObject?.firstName}
+                    autoFocus
+                    onChange={handleChange}
+                    isInvalid={!!errors.firstName}
+                  />
+                </Form.Group>
+                <p className="errorMessage">{errors.firstName}</p>
+                <Form.Group className="mb-3" controlId="editLastName">
+                  <Form.Label>นามสกุล</Form.Label>
                   <Form.Control
                     name="word"
                     type="text"
-                    placeholder={"currentWord"}
+                    placeholder={userObject?.lastName}
                     autoFocus
                     onChange={handleChange}
-                    isInvalid={!!errors.word}
+                    isInvalid={!!errors.lastName}
                   />
                 </Form.Group>
-                <Form.Group className="mb-3" controlId="addDesc">
-                  <Form.Label>คำอธิบาย</Form.Label>
+                <p className="errorMessage">{errors.lastName}</p>
+                <Form.Group className="mb-3" controlId="editPassword">
+                  <Form.Label>password</Form.Label>
                   <Form.Control
-                    name="description"
-                    as="textarea"
-                    rows={3}
-                    placeholder={"currentDesc"}
+                    name="password"
+                    type="password"
+                    placeholder="อย่างน้อย 8 ตัว"
+                    autoFocus
                     onChange={handleChange}
-                    isInvalid={!!errors.description}
+                    isInvalid={!!errors.password}
                   />
                 </Form.Group>
+                <p className="errorMessage">{errors.password}</p>
+                <Form.Group className="mb-3" controlId="editConfirmPassword">
+                  <Form.Label>Confirm passward</Form.Label>
+                  <Form.Control
+                    name="confirmPassword"
+                    type="password"
+                    rows={3}
+                    placeholder="อย่างน้อย 8 ตัว"
+                    onChange={handleChange}
+                    isInvalid={!!errors.confirmPassword}
+                  />
+                </Form.Group>
+                <p className="errorMessage">{errors.confirmPassword}</p>
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="secondary" onClick={() => handleClose()}>
