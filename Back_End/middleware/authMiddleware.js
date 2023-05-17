@@ -32,11 +32,11 @@ const checkUser = (req, res, next) => {
     if (token) {
         jwt.verify(token, 'tsl project secret', async (err, decodedToken) => {
             if (err) {
-                console.log(err.message)
+                // console.log(err.message)
                 res.locals.user = null
                 next()
             } else {
-                console.log({decodeToken: decodedToken})
+                // console.log({decodeToken: decodedToken})
                 let user = await User.findById(decodedToken.user._id)
                 // console.log(user)
                 res.locals.user = user
