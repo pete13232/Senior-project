@@ -376,14 +376,53 @@ const Home = () => {
     ) {
       setSceneObject(sceneRef.current?.scene);
       setCameraControls(sceneRef.current?.controls);
-      console.log("sceneRef");
-      console.log(sceneRef);
-      console.log(sceneRef.current);
-      console.log(sceneRef.current.scene);
-
-      console.log(sceneRef.current.controls);
     }
   }, [sceneRef?.current?.scene, sceneRef?.current?.controls]);
+
+  const renderValidatedAniamtion = () => {
+    if (
+      animationList.filter(
+        (animation, index) => animationLogList[index]?.validateStat === true
+      ).length > 0
+    ) {
+      return animationList
+        .filter(
+          (animation, index) => animationLogList[index]?.validateStat === true
+        )
+        .map((animation, index) => (
+          <ListGroup.Item
+            as="ul"
+            className="d-flex align-items-center"
+            key={index}
+          >
+            <div className="d-flex flex-fill  justify-content-between align-items-center">
+              <div className="d-flex justify-content-between align-items-center ps-1">
+                รูปแบบที่ {index + 1}
+              </div>
+              <div className="d-flex justify-content-between align-items-center">
+                <Link to={`/words/${wordID}/animations/${animation._id}`}>
+                  <Button variant="primary" className="mx-2 button-class">
+                    เล่น
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </ListGroup.Item>
+        ));
+    } else {
+      return (
+        <>
+          <ListGroup.Item as="ul" className="d-flex align-items-center">
+            <div className="d-flex flex-fill  justify-content-between align-items-center">
+              <div className="d-flex justify-content-between align-items-center ps-1 card-item-text">
+                ยังไม่มีแอนิเมชัน
+              </div>
+            </div>
+          </ListGroup.Item>
+        </>
+      );
+    }
+  };
 
   return (
     <>
@@ -578,36 +617,7 @@ const Home = () => {
                                 </div>
                               </ListGroup.Item>
                             ))
-                          : animationList
-                              .filter(
-                                (animation, index) =>
-                                  animationLogList[index]?.validateStat === true
-                              )
-                              .map((animation, index) => (
-                                <ListGroup.Item
-                                  as="ul"
-                                  className="d-flex align-items-center"
-                                  key={index}
-                                >
-                                  <div className="d-flex flex-fill  justify-content-between align-items-center">
-                                    <div className="d-flex justify-content-between align-items-center ps-1">
-                                      รูปแบบที่ {index + 1}
-                                    </div>
-                                    <div className="d-flex justify-content-between align-items-center">
-                                      <Link
-                                        to={`/words/${wordID}/animations/${animation._id}`}
-                                      >
-                                        <Button
-                                          variant="primary"
-                                          className="mx-2 button-class"
-                                        >
-                                          เล่น
-                                        </Button>
-                                      </Link>
-                                    </div>
-                                  </div>
-                                </ListGroup.Item>
-                              ))}
+                          : renderValidatedAniamtion()}
                       </ListGroup>
                     ) : (
                       <ListGroup as="ol" variant="flush">
