@@ -4,7 +4,7 @@ const ValidateLog = require("../models/ValidateLog");
 const { populate, update, create } = require("../models/Word");
 const upload = require('../middleware/multer');
 const jwt = require('jsonwebtoken');
-
+const bcrypt = require('bcrypt')
 
 // Create Token
 const maxAge = 3 * 24 * 60 * 60; // 3 days
@@ -78,7 +78,8 @@ const editUser = async (req, res) => {
                 { new: true }
             );
             if (updatedUser) {
-                const token = createToken(updatedUser)
+                const user = await updatedUser.save()
+                const token = createToken(user)
                 res.status(200).json({token});
             } else {
                 res.status(200).json("No user edited");
