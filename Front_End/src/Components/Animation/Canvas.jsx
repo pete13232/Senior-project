@@ -60,8 +60,6 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
     temp_init.controls.update();
 
     if (temp_init.scene.children[2] !== undefined) {
-      // console.log("temp_init.scene.children[2]");
-      // console.log(temp_init.scene.children[2]);
       temp_init.scene.children[2].position.x = options.position_x;
       temp_init.scene.children[2].position.y = options.position_y;
       temp_init.scene.children[2].position.z = options.position_z;
@@ -74,10 +72,7 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
   };
 
   useEffect(() => {
-    console.log("ref in useEffect");
-    console.log(ref);
     if (!loaded && ref) {
-      console.log("Init");
       temp_init = new SceneInit(ref);
       temp_init.initialize();
       animate();
@@ -97,8 +92,6 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
           MySwal.showLoading();
           model.then((object) => {
             object.animations.splice(0);
-            console.log("object");
-            console.log(object);
             let s = 0.28;
             object.scale.set(s, s, s);
             object.position.y = -32;
@@ -137,7 +130,7 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
           text: `กำลังโหลดแอนิเมชันตัวละคร`,
           allowOutsideClick: false,
           didOpen: () => {
-            t0 = performance.now();
+
             MySwal.showLoading();
             /*-----------------------Fetch Compress JSON from cloud ------------------- */
             fetchData(`http://localhost:3333/animations/${animationID}`)
@@ -157,7 +150,7 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
                   const decompressedClip = pako.inflate(uint8array, {
                     to: "string",
                   });
-
+                  t0 = performance.now();
                   temp2_mixer = mixer;
                   temp2_clips = clips;
                   if (temp2_clips.length > 0) {
@@ -170,12 +163,11 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
                   );
                   temp2_clips.push(temp2_mixer.clipAction(animationClip));
                   setClips(temp2_clips);
-
                   temp2_clips[0].play();
                   setClip(animationClip);
                   MySwal.close();
                   t1 = performance.now();
-                  console.log(`myFunction took ${t1 - t0} milliseconds.`);
+                  console.log(`Loading model took ${t1 - t0} milliseconds.`);
                 };
                 reader.readAsArrayBuffer(compressedClip);
               })
@@ -280,10 +272,7 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
     }
   }, [animationID, mixer, clips]);
 
-  useEffect(() => {
-    console.log("ref");
-    console.log(ref);
-  }, [ref]);
+
 
   const div = <div ref={ref} />;
   return div;

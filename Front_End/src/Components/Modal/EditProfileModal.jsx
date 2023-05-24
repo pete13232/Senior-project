@@ -139,7 +139,7 @@ const EditWordModal = ({ showEditProfile, setShowEditProfile, refetch }) => {
                 <Form.Group className="mb-3" controlId="editLastName">
                   <Form.Label>นามสกุล</Form.Label>
                   <Form.Control
-                    name="word"
+                    name="lastName"
                     type="text"
                     placeholder={userObject?.lastName}
                     autoFocus
