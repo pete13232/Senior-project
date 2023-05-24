@@ -18,6 +18,11 @@ node_modules/three/examples/jsm/*
 !node_modules/three/examples/jsm/loaders/
 node_modules/three/examples/jsm/loaders/*
 !node_modules/three/examples/jsm/loaders/FBXLoader.js
+!node_modules/three/examples/jsm/exporters/
+node_modules/three/examples/jsm/exporters/*
+!node_modules/three/examples/jsm/exporters/GLTFExporter.js
+
+
 
 dist
 dist-ssr

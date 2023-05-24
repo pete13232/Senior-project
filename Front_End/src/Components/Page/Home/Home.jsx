@@ -287,8 +287,8 @@ const Home = () => {
   };
 
   const handleDownloadGLB = () => {
-    const exporter = new GLTFExporter();
     const modelToExport = sceneObject?.children[2];
+    const exporter = new GLTFExporter();
     exporter.parse(
       modelToExport,
 
@@ -296,8 +296,6 @@ const Home = () => {
         const blob = new Blob([result], {
           type: "application/octet-stream",
         });
-        console.log("blob");
-        console.log(blob);
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.style.display = "none";
@@ -337,7 +335,8 @@ const Home = () => {
       })
       .then((responseClip) => {
         const compressedClip = new Blob([responseClip]);
-
+        console.log("clip");
+        console.log(clip);
         const reader = new FileReader();
         reader.onload = () => {
           const uint8array = new Uint8Array(reader.result);
@@ -346,10 +345,15 @@ const Home = () => {
           const decompressedClip = pako.inflate(uint8array, {
             to: "string",
           });
-
-          const blob = new Blob([decompressedClip], {
+          console.log("decompressedClip");
+          console.log(JSON.parse(decompressedClip));
+          const temp = JSON.parse(decompressedClip);
+          const blob = new Blob([JSON.stringify(temp.tracks[270])], {
             type: "application/json",
           });
+          // const blob = new Blob([decompressedClip], {
+          //   type: "application/json",
+          // });
           console.log("blob");
           console.log(blob);
           const url = URL.createObjectURL(blob);

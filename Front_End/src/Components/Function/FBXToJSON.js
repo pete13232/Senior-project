@@ -11,19 +11,17 @@ const FBXtoJSON = ({ file }) =>
         const numValuesPerKeyframe = track.values.length / timesLength;
         // Find index of keyframe to remove
         for (
-          let indexToRemove = 0;
+          let indexToRemove = 1;
           indexToRemove < timesLength;
           indexToRemove = indexToRemove + 1
         ) {
           if (indexToRemove > 0) {
             // Remove keyframe at specified index
-            track.times.splice(indexToRemove, 1 * samplingConstant);
+            track.times.splice(indexToRemove, samplingConstant);
             track.values.splice(
               indexToRemove * numValuesPerKeyframe,
               numValuesPerKeyframe * samplingConstant
             );
-
-            // Update times and values of track
           }
         }
         optimizedTracks[i] = { ...track };
@@ -45,13 +43,7 @@ const FBXtoJSON = ({ file }) =>
         // result = JSON.stringify(object.animations[0].toJSON());
         const JSONClip = object.animations[0].toJSON();
         const originalClip = JSON.parse(JSON.stringify(JSONClip));
-        console.log("Original Clip:");
-        console.log(originalClip);
-        console.log(JSON.stringify(originalClip));
-        const optimizedClip = AnimationOptimizer(JSONClip, 10);
-        console.log("optimizedClip");
-        console.log(optimizedClip);
-        console.log(JSON.stringify(optimizedClip));
+        const optimizedClip = AnimationOptimizer(JSONClip, 20);
         // result = pako.gzip(JSON.stringify(object.animations[0].toJSON()));
         result = pako.gzip(JSON.stringify(optimizedClip));
       }
