@@ -65,12 +65,10 @@ const EditWordModal = ({ showEditProfile, setShowEditProfile, refetch }) => {
           },
         })
         .then((editRes) => {
-          console.log(editRes.data.token);
           localStorage.setItem("token", editRes.data.token);
           window.dispatchEvent(new Event("storage")); // update storage after set item
           const decodedToken = jwt_decode(editRes.data.token);
           delete decodedToken.user.password;
-          console.log(decodedToken);
           dispatch(setUser(decodedToken.user));
           MySwal.fire({
             position: "center",

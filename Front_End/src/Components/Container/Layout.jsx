@@ -22,15 +22,12 @@ const Layout = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("Layout");
     if (isTokenExpired(token)) {
-      console.log("Expired");
       localStorage.removeItem("token");
       window.dispatchEvent(new Event("storage")); // update storage after set item
       dispatch(setUser(null));
     } else {
       if (userObject === null) {
-        console.log("userObject === null");
         const decodedToken = jwt_decode(token);
         dispatch(setUser(decodedToken.user));
       }
