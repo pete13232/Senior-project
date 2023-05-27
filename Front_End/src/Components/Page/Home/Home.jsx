@@ -31,8 +31,10 @@ import UploadAnimation from "../../SubComponents/UploadAnimation";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { GLTFExporter } from "three/examples/jsm/exporters/GLTFExporter";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { clearSearch } from "../../redux/searchReducer";
 import pako from "pako";
+
 const Home = () => {
   const MySwal = withReactContent(Swal);
 
@@ -51,8 +53,11 @@ const Home = () => {
   const [sceneObject, setSceneObject] = useState(undefined);
   const [loaded, setLoaded] = useState(false);
   const [clip, setClip] = useState(undefined);
+
   const sceneRef = useRef(undefined);
+  const dispatch = useDispatch();
   const userObject = useSelector((state) => state.user.userObject);
+  const searchWord = useSelector((state) => state.search.searchValue);
   const fetchWordList = () => {
     fetchData("http://localhost:3333/words")
       .then((res) => {
@@ -75,8 +80,6 @@ const Home = () => {
   const fetchAnimationList = () => {
     fetchData(`http://localhost:3333/animations/get?wordID=${wordID}`)
       .then((res) => {
-        console.log("Animation List");
-        console.log(res.data);
         setAnimationList(res.data);
         Promise.all(
           res.data.map((animation) =>
@@ -96,8 +99,6 @@ const Home = () => {
               })
           )
         ).then((results) => {
-          console.log("Animation Log");
-          console.log(results);
           setAnimationLogList(results);
         });
       })
@@ -115,6 +116,9 @@ const Home = () => {
 
   useEffect(() => {
     fetchWordList();
+    return () => {
+      dispatch(clearSearch());
+    };
   }, []);
 
   useEffect(() => {
@@ -321,63 +325,7 @@ const Home = () => {
         animations: [clip],
       }
     );
-
-    // Update the Canvas component's state to trigger a rerender
-    // sceneRef.current.setShouldRender(false);
   };
-
-  const handleDownloadJSON = () => {
-    fetchData(`http://localhost:3333/animations/${animationID}`)
-      .then((resAnimation) => {
-        return fetchData(resAnimation.data.file, {
-          responseType: "arraybuffer",
-        });
-      })
-      .then((responseClip) => {
-        const compressedClip = new Blob([responseClip]);
-        console.log("clip");
-        console.log(clip);
-        const reader = new FileReader();
-        reader.onload = () => {
-          const uint8array = new Uint8Array(reader.result);
-
-          // Inflate the compressed data using pako
-          const decompressedClip = pako.inflate(uint8array, {
-            to: "string",
-          });
-          console.log("decompressedClip");
-          console.log(JSON.parse(decompressedClip));
-          const temp = JSON.parse(decompressedClip);
-          const blob = new Blob([JSON.stringify(temp.tracks[270])], {
-            type: "application/json",
-          });
-          // const blob = new Blob([decompressedClip], {
-          //   type: "application/json",
-          // });
-          console.log("blob");
-          console.log(blob);
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.style.display = "none";
-          link.href = url;
-          link.setAttribute("download", "model.json");
-          document.body.appendChild(link);
-          link.click();
-          URL.revokeObjectURL(url);
-        };
-        reader.readAsArrayBuffer(compressedClip);
-      });
-  };
-
-  useEffect(() => {
-    if (
-      sceneRef.current.scene !== undefined &&
-      sceneRef.current.controls !== undefined
-    ) {
-      setSceneObject(sceneRef.current?.scene);
-      setCameraControls(sceneRef.current?.controls);
-    }
-  }, [sceneRef?.current?.scene, sceneRef?.current?.controls]);
 
   const renderValidatedAniamtion = () => {
     if (
@@ -423,6 +371,50 @@ const Home = () => {
       );
     }
   };
+
+  const handleDownloadJSON = () => {
+    fetchData(`http://localhost:3333/animations/${animationID}`)
+      .then((resAnimation) => {
+        return fetchData(resAnimation.data.file, {
+          responseType: "arraybuffer",
+        });
+      })
+      .then((responseClip) => {
+        const compressedClip = new Blob([responseClip]);
+        const reader = new FileReader();
+        reader.onload = () => {
+          const uint8array = new Uint8Array(reader.result);
+
+          // Inflate the compressed data using pako
+          const decompressedClip = pako.inflate(uint8array, {
+            to: "string",
+          });
+          const temp = JSON.parse(decompressedClip);
+          const blob = new Blob([JSON.stringify(temp.tracks[270])], {
+            type: "application/json",
+          });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.style.display = "none";
+          link.href = url;
+          link.setAttribute("download", "model.json");
+          document.body.appendChild(link);
+          link.click();
+          URL.revokeObjectURL(url);
+        };
+        reader.readAsArrayBuffer(compressedClip);
+      });
+  };
+
+  useEffect(() => {
+    if (
+      sceneRef.current.scene !== undefined &&
+      sceneRef.current.controls !== undefined
+    ) {
+      setSceneObject(sceneRef.current?.scene);
+      setCameraControls(sceneRef.current?.controls);
+    }
+  }, [sceneRef?.current?.scene, sceneRef?.current?.controls]);
 
   return (
     <>
@@ -665,38 +657,40 @@ const Home = () => {
                 )}
               </Card.Header>
               <ListGroup as="ol" numbered variant="flush">
-                {wordList.map((word) => (
-                  <ListGroup.Item
-                    as="li"
-                    className="d-flex align-items-center"
-                    key={word._id}
-                  >
-                    <div className="d-flex flex-fill  justify-content-between align-items-center">
-                      <div className="d-flex justify-content-between align-items-center ps-1">
-                        {word.word}
+                {wordList
+                  .filter((word) => word.word.includes(searchWord))
+                  .map((word) => (
+                    <ListGroup.Item
+                      as="li"
+                      className="d-flex align-items-center"
+                      key={word._id}
+                    >
+                      <div className="d-flex flex-fill  justify-content-between align-items-center">
+                        <div className="d-flex justify-content-between align-items-center ps-1">
+                          {word.word}
+                        </div>
+                        <div className="d-flex justify-content-between align-items-center">
+                          <Link to={`/words/${word._id}`}>
+                            <Button
+                              variant="primary"
+                              className="mx-1 button-class"
+                            >
+                              เลือก
+                            </Button>
+                          </Link>
+                          {userObject?.role === "admin" && (
+                            <Button
+                              variant="danger"
+                              className="mx-1 button-class"
+                              onClick={() => deleteWordAlert(word)}
+                            >
+                              ลบ
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                      <div className="d-flex justify-content-between align-items-center">
-                        <Link to={`/words/${word._id}`}>
-                          <Button
-                            variant="primary"
-                            className="mx-1 button-class"
-                          >
-                            เลือก
-                          </Button>
-                        </Link>
-                        {userObject?.role === "admin" && (
-                          <Button
-                            variant="danger"
-                            className="mx-1 button-class"
-                            onClick={() => deleteWordAlert(word)}
-                          >
-                            ลบ
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </ListGroup.Item>
-                ))}
+                    </ListGroup.Item>
+                  ))}
               </ListGroup>
             </Card>
           </Col>

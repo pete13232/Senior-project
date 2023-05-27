@@ -53,9 +53,7 @@ const Profile = () => {
     }
   }, [userObject]);
 
-  // useEffect(() => {
-  //   console.log(validateLogList);
-  // }, [validateLogList]);
+
 
   return (
     <div className="profile-background ">

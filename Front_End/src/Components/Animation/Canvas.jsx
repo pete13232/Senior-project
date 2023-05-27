@@ -58,6 +58,13 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
     temp_init.render();
     temp_init.stats.update();
     temp_init.controls.update();
+    const worldPosition = new THREE.Vector3();
+    temp_init.scene.children[2]?.children[0].children[0].children[0].children[1].children[1].children[1].children[1].children[2].children[0].children[0]?.getWorldPosition(
+      worldPosition
+    );
+    var project = worldPosition.clone();
+    temp_init.camera.updateMatrixWorld();
+    project.project(temp_init.camera);
 
     if (temp_init.scene.children[2] !== undefined) {
       temp_init.scene.children[2].position.x = options.position_x;
@@ -130,7 +137,6 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
           text: `กำลังโหลดแอนิเมชันตัวละคร`,
           allowOutsideClick: false,
           didOpen: () => {
-
             MySwal.showLoading();
             /*-----------------------Fetch Compress JSON from cloud ------------------- */
             fetchData(`http://localhost:3333/animations/${animationID}`)
@@ -167,7 +173,7 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
                   setClip(animationClip);
                   MySwal.close();
                   t1 = performance.now();
-                  console.log(`Loading model took ${t1 - t0} milliseconds.`);
+                  // console.log(`Loading model took ${t1 - t0} milliseconds.`);
                 };
                 reader.readAsArrayBuffer(compressedClip);
               })
@@ -200,52 +206,6 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
               //     console.log(`myFunction took ${t1 - t0} milliseconds.`);
               //   })
               /*-----------------------Fetch Normal JSON from cloud ------------------- */
-              /*----------------------- Fetch Backend Compress JSON from cloud ------------------- */
-
-              // fetchData(`http://localhost:3333/animations/${animationID}`)
-              //   .then((resAnimation) => {
-              //     const animationForm = new FormData();
-              //     animationForm.append("GCS_filename", resAnimation.data.file);
-              //     return fetchData(
-              //       `http://localhost:3333/animations/compress/GCS?animationID=${animationID}`,
-              //       {},
-              //       animationForm
-              //     );
-              //   })
-              //   .then((responseClip) => {
-              //     const compressedClip = new Blob([responseClip]);
-
-              //     const reader = new FileReader();
-              //     reader.onload = () => {
-              //       const uint8array = new Uint8Array(reader.result);
-
-              //       // Inflate the compressed data using pako
-              //       const decompressedClip = pako.inflate(uint8array, {
-              //         to: "string",
-              //       });
-
-              //       temp2_mixer = mixer;
-              //       temp2_clips = clips;
-              //       if (temp2_clips.length > 0) {
-              //         temp2_clips.splice(0);
-              //       }
-
-              //       temp2_clips.push(
-              //         temp2_mixer.clipAction(
-              //           THREE.AnimationClip.parse(JSON.parse(decompressedClip))
-              //         )
-              //       );
-
-              //       setClips(temp2_clips);
-
-              //       clips[0].play();
-              //       MySwal.close();
-              //       t1 = performance.now();
-              //       console.log(`myFunction took ${t1 - t0} milliseconds.`);
-              //     };
-              //     reader.readAsArrayBuffer(compressedClip);
-              //   })
-              /*----------------------- Fetch Backend Compress JSON from cloud ------------------- */
               .catch((error) => {
                 const err = error.message;
                 MySwal.fire({
@@ -271,8 +231,6 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
       }
     }
   }, [animationID, mixer, clips]);
-
-
 
   const div = <div ref={ref} />;
   return div;
