@@ -1,10 +1,10 @@
 const { default: mongoose } = require("mongoose");
-const User = require("../models/User");
-const ValidateLog = require("../models/ValidateLog");
-const { populate, update, create } = require("../models/Word");
 const upload = require('../middleware/multer');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt')
+//Model
+const User = require("../models/User");
+const ValidateLog = require("../models/ValidateLog");
+
 
 // Create Token
 const maxAge = 3 * 24 * 60 * 60; // 3 days
@@ -13,7 +13,6 @@ const createToken = (user) => {
         expiresIn: maxAge,
     });
 };
-
 
 // Get all user
 const getUser = async (req, res) => {

@@ -3,7 +3,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-const router = express.Router();
 const path = require("path");
 
 // parser
@@ -31,11 +30,8 @@ app.use(
   })
 );
 app.use("/file", express.static(path.join(__dirname, "/Uploaded/")));
-app.use("/file/compress", express.static(path.join(__dirname, "/Compressed/")));
-
 
 mongoose.set("strictQuery", true);
-// app.use(express.static("public"));
 
 // view engine
 app.set('view engine', 'ejs')

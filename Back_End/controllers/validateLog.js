@@ -1,5 +1,6 @@
 const ValidateLog = require("../models/ValidateLog")
 
+// get log
 const getLog = async (req, res) => {
     try {
         const foundLog = await ValidateLog.find({}).populate({
