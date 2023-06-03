@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 
-const { getWordBySearch, getWord, createWord, addAnimation, deleteWord, getWordByID, editWord } = require('../controllers/words')
+const { getWordBySearch, getWord, createWord, deleteWord, getWordByID, editWord } = require('../controllers/words')
 const { requireAuth, checkPermission } = require('../middleware/authMiddleware')
 
 // Get all word
@@ -15,10 +15,6 @@ router.route("/words/search")
 // Create New Word
 router.route("/words/add")
     .post([requireAuth, checkPermission(['admin'])], createWord)
-
-// Add Animation to Word
-// router.route("/words/add/animation/:wordID")
-//     .put([requireAuth, checkPermission(['admin'])], addAnimation)
 
 // Delete Selected word
 router.route("/words/delete/:wordID")

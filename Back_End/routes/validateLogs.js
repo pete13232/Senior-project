@@ -1,9 +1,9 @@
 const express = require('express')
 const router = express.Router()
 
-const ValidateLog = require("../models/ValidateLog")
 const { getLog } = require('../controllers/validateLog')
 
+// get log
 router.route("/validateLogs")
     .get(getLog)
 
