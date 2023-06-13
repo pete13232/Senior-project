@@ -40,11 +40,9 @@ const FBXtoJSON = ({ file }) =>
       const loader = new FBXLoader();
       object = loader.parse(fileAsArrayBuffer);
       if (object.animations[0] !== undefined) {
-        // result = JSON.stringify(object.animations[0].toJSON());
         const JSONClip = object.animations[0].toJSON();
-        const originalClip = JSON.parse(JSON.stringify(JSONClip));
-        const optimizedClip = AnimationOptimizer(JSONClip, 20);
-        // result = pako.gzip(JSON.stringify(object.animations[0].toJSON()));
+        const optimizedClip = AnimationOptimizer(JSONClip, 7);
+
         result = pako.gzip(JSON.stringify(optimizedClip));
       }
       res(result);

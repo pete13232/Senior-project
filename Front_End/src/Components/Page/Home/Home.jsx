@@ -7,15 +7,13 @@ import {
   Row,
   Col,
   ListGroup,
-  Form,
   OverlayTrigger,
   Popover,
 } from "react-bootstrap";
 
 import {
   FaPlay,
-  FaFastForward,
-  FaFastBackward,
+  FaPause,
   FaPlus,
   FaEdit,
 } from "react-icons/fa";
@@ -53,6 +51,7 @@ const Home = () => {
   const [sceneObject, setSceneObject] = useState(undefined);
   const [loaded, setLoaded] = useState(false);
   const [clip, setClip] = useState(undefined);
+  const [play, setPlay] = useState(true);
 
   const sceneRef = useRef(undefined);
   const dispatch = useDispatch();
@@ -390,7 +389,7 @@ const Home = () => {
             to: "string",
           });
           const temp = JSON.parse(decompressedClip);
-          const blob = new Blob([JSON.stringify(temp.tracks[270])], {
+          const blob = new Blob([JSON.stringify(temp)], {
             type: "application/json",
           });
           const url = URL.createObjectURL(blob);
@@ -433,6 +432,7 @@ const Home = () => {
                     setLoaded={setLoaded}
                     clip={clip}
                     setClip={setClip}
+                    play={play}
                   />
                 </div>
                 <div className="d-flex justify-content-between  align-items-center pt-3 position-relative">
@@ -446,15 +446,23 @@ const Home = () => {
                     รีเซ็ทมุมกล้อง
                   </Button>
                   <div className="d-flex justify-content-center align-items-center pt-3 position-absolute top-50 start-50 translate-middle icon-container">
-                    <Button variant="primary" className="mx-2">
+                    {/* <Button variant="primary" className="mx-2">
                       <FaFastBackward color="white" size={16} />
+                    </Button> */}
+                    <Button
+                      variant="primary"
+                      className="mx-2"
+                      onClick={() => setPlay(!play)}
+                    >
+                      {play ? (
+                        <FaPause color="white" size={16} />
+                      ) : (
+                        <FaPlay color="white" size={16} />
+                      )}
                     </Button>
-                    <Button variant="primary" className="mx-2">
-                      <FaPlay color="white" size={16} />
-                    </Button>
-                    <Button variant="primary" className="mx-2 ">
+                    {/* <Button variant="primary" className="mx-2 ">
                       <FaFastForward color="white" size={16} />
-                    </Button>
+                    </Button> */}
                   </div>
                   <div className="d-flex justify-content-between  align-items-center">
                     {" "}

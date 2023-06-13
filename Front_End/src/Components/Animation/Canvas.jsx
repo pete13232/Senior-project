@@ -8,12 +8,12 @@ import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import pako from "pako";
-const Canvas = ({ sceneRef, clip, setClip }) => {
+const Canvas = ({ sceneRef, clip, setClip, play }) => {
   const fetchData = async (url, header, data) => {
     const response = await axios.get(url, header, data);
     return response.data;
   };
-  const { wordID, animationID } = useParams();
+  const { animationID } = useParams();
 
   const MySwal = withReactContent(Swal);
 
@@ -27,7 +27,7 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
   let temp2_clips = undefined;
   const [init, setInit] = useState(undefined);
   const [mixer, setMixer] = useState(undefined);
-  const [clips, setClips] = useState([]);
+  const [clips, setClips] = useState(undefined);
 
   const ref = useRef(null);
   const mixerRef = useRef(null);
@@ -53,18 +53,13 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
 
   const animate = () => {
     window.requestAnimationFrame(animate);
+
+    // window.requestAnimationFrame(animate);
     const delta = clock.getDelta();
     if (temp1_mixer) temp1_mixer.update(delta);
     temp_init.render();
     temp_init.stats.update();
     temp_init.controls.update();
-    const worldPosition = new THREE.Vector3();
-    temp_init.scene.children[2]?.children[0].children[0].children[0].children[1].children[1].children[1].children[1].children[2].children[0].children[0]?.getWorldPosition(
-      worldPosition
-    );
-    var project = worldPosition.clone();
-    temp_init.camera.updateMatrixWorld();
-    project.project(temp_init.camera);
 
     if (temp_init.scene.children[2] !== undefined) {
       temp_init.scene.children[2].position.x = options.position_x;
@@ -86,11 +81,6 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
       temp_init.animate();
 
       setInit(temp_init);
-      // const gui = new dat.GUI();
-      // gui.add(options, "position_x", -20, 20);
-      // gui.add(options, "position_y", -50, 50);
-      // gui.add(options, "position_z", -50, 50);
-      // gui.add(options, "scale", 0.1, 0.5);
       MySwal.fire({
         title: "รอสักครู่",
         text: `กำลังโหลดโมเดลตัวละคร`,
@@ -169,44 +159,23 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
                   );
                   temp2_clips.push(temp2_mixer.clipAction(animationClip));
                   setClips(temp2_clips);
+
                   temp2_clips[0].play();
+                  if (play === false) {
+                    temp2_clips[0].paused = true;
+                  } else {
+                    temp2_clips[0].paused = false;
+                  }
                   setClip(animationClip);
                   MySwal.close();
                   t1 = performance.now();
-                  // console.log(`Loading model took ${t1 - t0} milliseconds.`);
+                  console.log(`Loading model took ${t1 - t0} milliseconds.`);
                 };
                 reader.readAsArrayBuffer(compressedClip);
               })
               /*-----------------------Fetch Compress JSON from cloud ------------------- */
 
-              /*-----------------------Fetch Normal JSON from cloud ------------------- */
-              // fetchData(`http://localhost:3333/animations/${animationID}`)
-              //   .then((resAnimation) => {
-              //     return fetchData(resAnimation.data.file);
-              //   })
-              //   .then((responseClip) => {
-              //     temp2_mixer = mixer;
-              //     temp2_clips = clips;
-              //     if (temp2_clips.length > 0) {
-              //       temp2_clips.splice(0);
-              //     }
-
-              //     temp2_clips.push(
-              //       temp2_mixer.clipAction(
-              //         THREE.AnimationClip.parse(responseClip)
-              //       )
-              //     );
-              //     // clips.push(mixer.clipAction(clipTransform(responseClip)));
-
-              //     setClips(temp2_clips);
-
-              //     clips[0].play();
-              //     MySwal.close();
-              //     t1 = performance.now();
-              //     console.log(`myFunction took ${t1 - t0} milliseconds.`);
-              //   })
-              /*-----------------------Fetch Normal JSON from cloud ------------------- */
-              .catch((error) => {
+                .catch((error) => {
                 const err = error.message;
                 MySwal.fire({
                   position: "center",
@@ -231,6 +200,17 @@ const Canvas = ({ sceneRef, clip, setClip }) => {
       }
     }
   }, [animationID, mixer, clips]);
+
+  useEffect(() => {
+    if (clips !== undefined && clips.length > 0) {
+      temp2_clips = clips;
+      if (play === true) {
+        temp2_clips[0].paused = false;
+      } else {
+        temp2_clips[0].paused = true;
+      }
+    }
+  }, [play]);
 
   const div = <div ref={ref} />;
   return div;
