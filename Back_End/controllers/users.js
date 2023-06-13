@@ -1,9 +1,9 @@
 const { default: mongoose } = require("mongoose");
-const User = require("../models/User");
-const ValidateLog = require("../models/ValidateLog");
-const { populate, update, create } = require("../models/Word");
 const upload = require('../middleware/multer');
 const jwt = require('jsonwebtoken');
+//Model
+const User = require("../models/User");
+const ValidateLog = require("../models/ValidateLog");
 
 
 // Create Token
@@ -13,7 +13,6 @@ const createToken = (user) => {
         expiresIn: maxAge,
     });
 };
-
 
 // Get all user
 const getUser = async (req, res) => {
@@ -78,7 +77,8 @@ const editUser = async (req, res) => {
                 { new: true }
             );
             if (updatedUser) {
-                const token = createToken(updatedUser)
+                const user = await updatedUser.save()
+                const token = createToken(user)
                 res.status(200).json({token});
             } else {
                 res.status(200).json("No user edited");

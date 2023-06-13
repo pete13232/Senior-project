@@ -1,12 +1,14 @@
 const { default: mongoose } = require("mongoose");
 const path = require('path');
 const upload = require('../middleware/multer');
+// GCS
 const { Storage } = require("@google-cloud/storage");
-// Instantiate a storage client with credentials
 const storage = new Storage({ keyFilename: "google-cloud-key.json" });
 const bucket = storage.bucket("pete-bucket-1068");
+// Model
 const Word = require("../models/Word");
 const Animation = require('../models/Animation');
+
 
 // Get all word
 const getWord = async (req, res) => {
@@ -55,27 +57,6 @@ const createWord = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-
-// Add Animation to Word
-// const addAnimation = async (req, res) => {
-//   const { wordID } = req.params;
-//   const { animationID } = req.body;
-
-//   if (!mongoose.Types.ObjectId.isValid(wordID)) {
-//     res.status(400).json("This is not objectID");
-//   } else {
-//     try {
-//       const addedAnimation = await Word.findByIdAndUpdate(
-//         { _id: wordID },
-//         { $push: { animation: animationID } },
-//         { new: true }
-//       );
-//       res.status(200).json(addedAnimation);
-//     } catch (err) {
-//       res.status(400).json({ message: err.message });
-//     }
-//   }
-// };
 
 // Edit Selected Word
 const editWord = async (req, res) => {
