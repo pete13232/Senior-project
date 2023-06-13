@@ -5,7 +5,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { setUser } from "./../redux/userReducer";
 import jwt_decode from "jwt-decode";
 const Layout = () => {
-  const navigate = useNavigate();
   const userObject = useSelector((state) => state.user.userObject);
 
   const dispatch = useDispatch();
