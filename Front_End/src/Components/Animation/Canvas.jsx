@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useImperativeHandle } from "react";
-import * as dat from "dat.gui";
 import model from "./FBX_Loader.js";
 import SceneInit from "./SceneInit.js";
 import * as THREE from "three";
@@ -53,12 +52,9 @@ const Canvas = ({ sceneRef, clip, setClip, play }) => {
 
   const animate = () => {
     window.requestAnimationFrame(animate);
-
-    // window.requestAnimationFrame(animate);
     const delta = clock.getDelta();
     if (temp1_mixer) temp1_mixer.update(delta);
     temp_init.render();
-    temp_init.stats.update();
     temp_init.controls.update();
 
     if (temp_init.scene.children[2] !== undefined) {
